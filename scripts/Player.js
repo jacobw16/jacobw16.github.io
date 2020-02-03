@@ -9,6 +9,7 @@ import {
   player,
   deltatime,
   restartGame,
+  savedEnemies,
   population
 } from "./main.js";
 import Rectangle from "./Rectangle.js";
@@ -58,9 +59,9 @@ export default class Player extends Rectangle {
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
     this.updateScore(deltatime);
-   if (this.top() >= screen.height) {
-    //  restartGame();
-   }
+    if (this.top() >= screen.height) {
+      //  restartGame();
+    }
 
     if (this.withinGap() && this.grabID) {
       this.nextPlatformvar = surfacearray[0].id + 1;
@@ -105,13 +106,12 @@ export default class Player extends Rectangle {
   jump() {
     if (this.collided) {
       this.vel.y -= this.jumpspeed;
-        this.collided = false;
+      this.collided = false;
     }
   }
 
-
-  updateScore(time){
-      this.score += time * this.vel.x;
+  updateScore(time) {
+    this.score += time * this.vel.x;
   }
 
   handleCollisions(array) {
@@ -145,8 +145,10 @@ export default class Player extends Rectangle {
             resolveCollision(this, obstacle, coll);
             obstacle.colour = "blue";
             this.collided = true;
-            if (coll.loc === 'left side'){
-              population.splice(this, 1);
+            if (coll.loc === "left side") {
+              savedEnemies.push(
+                population.splice(population.indexOf(this), 1)[0]
+              );
             }
           }
         }

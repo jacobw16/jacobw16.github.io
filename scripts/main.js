@@ -12,7 +12,7 @@ import {
   detectCollision,
   forcepos
 } from "./collisions.js";
-import {createPopulation, getFurthestPlayer, managePopulation} from "./ga.js";
+import { createPopulation, getFurthestPlayer, managePopulation } from "./ga.js";
 
 let screen = document.getElementById("gamescreen");
 var heightratio = 9;
@@ -53,20 +53,29 @@ function newFriction() {
 
 function randomInRange(min, max) {
   return Math.random() * (max - min) + min;
-  }
-
+}
 
 window.addEventListener("keydown", function(ev) {
   if (ev.which === 32) {
-    player.jump();
-    player.collided = false;
+    for (var enemy of population) {
+      savedEnemies.push(enemy);
+    }
+    restartGame();
+    // player.jump();
+    // player.collided = false;
   }
+  // if (ev.which === 114) {
+  //   restartGame();
+  // }
 });
 
-
 var surfacearray = [];
-surfacearray.push(new Platform(0));
-tf.setBackend('cpu');
+var startingplat = new Platform(0);
+surfacearray.push(startingplat);
+surfacearray.push(
+  new Platform(startingplat.id + 1, startingplat.right() + 250)
+);
+// tf.setBackend("cpu");
 var score = 0;
 // var player = new Player();
 const popsize = 100;
@@ -85,7 +94,7 @@ var camY = 0;
 var furthestplayer = population[0];
 
 function manageCanvas(t = population[0]) {
-  t.colour = 'yellow';
+  t.colour = "yellow";
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, screen.width, screen.height);
   const raisespeed = 1.7;
@@ -130,12 +139,12 @@ function drawPlatforms() {
 function movePlatforms() {
   var platformgap = 250;
   for (var object of surfacearray) {
-
     object.move();
 
     if (
       screen.width + camX - object.right() >= platformgap &&
-      !object.passedplatgap
+      !object.passedplatgap &&
+      object.id !== 0
     ) {
       surfacearray.push(
         new Platform(object.id + 1, object.right() + platformgap)
@@ -145,7 +154,7 @@ function movePlatforms() {
     }
 
     if (object.isOffScreen()) {
-      //remove platform from array when its offscreen
+      //remove platform from array when its off screen
       surfacearray.shift();
     }
   }
@@ -153,10 +162,17 @@ function movePlatforms() {
 
 function restartGame() {
   surfacearray = [];
-  surfacearray.push(new Platform(0));
+  var startingplat = new Platform(0);
+  surfacearray.push(startingplat);
+  surfacearray.push(
+    new Platform(startingplat.id + 1, startingplat.right() + 250)
+  );
   score = 0;
   // player = new Player();
   population = createPopulation(popsize, []);
+  for (var i of savedEnemies) {
+    i.nn.model.dispose();
+  }
   savedEnemies = [];
   t1 = Date.now();
   t2 = 0;
@@ -186,21 +202,20 @@ function drawScore() {
 function drawObjects() {
   background2.draw();
   background.draw();
+  drawPlatforms();
   for (var item of population) {
     item.draw();
   }
-  drawPlatforms();
 }
 
 function updateObjects() {
   background2.move();
   background.move();
+  movePlatforms();
   for (var item of population) {
     item.update();
   }
-  movePlatforms();
 }
-
 
 function Animate() {
   requestAnimationFrame(Animate);
@@ -215,21 +230,21 @@ function Animate() {
   //   // platfriction = 0;
   // }
 
-
   if (deltatime >= fpsInterval) {
     t1 = t2 - (deltatime % fpsInterval);
-    for (var i = 0; i < 1; i++){
-      manageCanvas(getFurthestPlayer());
-      drawObjects();
+    manageCanvas(getFurthestPlayer());
+    drawObjects();
+    for (var i = 0; i < 1; i++) {
       updateObjects();
       drawScore();
       managePopulation();
       furthestplayer = getFurthestPlayer();
     }
+
     // var copy = JSON.stringify(player);
     // gamehistory.add(JSON.parse(copy));
     //   distance = 0;
-//    distance += calcDistance(deltatime);
+    //    distance += calcDistance(deltatime);
   }
 }
 Animate();

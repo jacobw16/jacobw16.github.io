@@ -63,7 +63,7 @@ export default class Platform extends Rectangle {
   placeObstacles(obsHeight, obsWidth) {
     for (var i = 0; i < this.coordinates.length; i++) {
       //loops through each generated coordinate and creates an obstacle object.
-      if (this.obstacles.length < this.obstaclequantity  && this.id !== 0) {
+      if (this.obstacles.length < this.obstaclequantity) {
         var newobj = new Obstacle(
           i,
           this.coordinates[i],
