@@ -16,7 +16,8 @@ export function sweptAABB(aabb1, object) {
       val: true,
       intersection: c1,
       loc: "left side",
-      objtype: object.constructor.name
+      objtype: object.constructor.name,
+      object: object
     };
   }
 
@@ -33,7 +34,8 @@ export function sweptAABB(aabb1, object) {
       val: true,
       intersection: c2,
       loc: "top",
-      objtype: object.constructor.name
+      objtype: object.constructor.name,
+      object: object
     };
   }
 
@@ -50,7 +52,8 @@ export function sweptAABB(aabb1, object) {
       val: true,
       intersection: c3,
       loc: "right side",
-      objtype: object.constructor.name
+      objtype: object.constructor.name,
+      object: object
     };
   } else return { val: false };
 }
@@ -117,9 +120,14 @@ export function resolveCollision(player, object, result) {
     player.vel.y -= 0.1;
     player.position.y += player.vel.y;
     player.vel.y = 0;
+
+    player.colour = "green";
+    player.collided = true;
+    player.lastcollision = result;
   }
 
   if (result.loc === "left side") {
     player.vel.x *= result.intersection.t;
+    player.vel.x -= 0.1;
   }
 }

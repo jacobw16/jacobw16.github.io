@@ -10,11 +10,14 @@ import {
   sweptAABB,
   findIntersect,
   detectCollision,
-  forcepos
+  forcepos,
+  resolveCollision
 } from "./collisions.js";
 import { createPopulation, getFurthestPlayer, managePopulation } from "./ga.js";
+import { callbacks } from "@tensorflow/tfjs-layers";
 
 let screen = document.getElementById("gamescreen");
+// screen.style.background = "black";
 var heightratio = 9;
 var widthratio = 16;
 let ctx = screen.getContext("2d");
@@ -29,7 +32,7 @@ screen.width = width;
 screen.height = height;
 
 var nextplatform;
-var frictionvalues = [0.8, 0.9, 0.65, 0.4];
+
 var pointer = 0;
 var platfriction = 1;
 
@@ -43,31 +46,16 @@ var platfriction = 1;
 
 var gamehistory = new History(20);
 
-function newFriction() {
-  platfriction = frictionvalues[pointer];
-  pointer = ++pointer % frictionvalues.length;
-  for (let i = 0; i < surfacearray.length; i++) {
-    surfacearray[i].friction = platfriction;
+export function newFriction(collision) {
+  // console.log(collision);
+  if (collision.object.constructor.name === "Platform") {
+    player.vel.x *= collision.object.friction;
   }
 }
 
 function randomInRange(min, max) {
   return Math.random() * (max - min) + min;
 }
-
-window.addEventListener("keydown", function(ev) {
-  if (ev.which === 32) {
-    for (var enemy of population) {
-      savedEnemies.push(enemy);
-    }
-    restartGame();
-    // player.jump();
-    // player.collided = false;
-  }
-  // if (ev.which === 114) {
-  //   restartGame();
-  // }
-});
 
 var surfacearray = [];
 var startingplat = new Platform(0);
@@ -77,10 +65,10 @@ surfacearray.push(
 );
 // tf.setBackend("cpu");
 var score = 0;
-// var player = new Player();
+var player = new Player();
 const popsize = 100;
 var savedEnemies = [];
-var population = createPopulation(popsize, []);
+// var population = createPopulation(popsize, []);
 var t1 = Date.now();
 var t2 = 0;
 var deltatime = 0.0;
@@ -91,9 +79,24 @@ var fpsInterval = 1 / fps;
 var distance = 0;
 var camX = 0;
 var camY = 0;
-var furthestplayer = population[0];
+var paused;
+// var furthestplayer = population[0];
 
-function manageCanvas(t = population[0]) {
+window.addEventListener("keydown", function(ev) {
+  if (ev.which === 32) {
+    player.jump();
+    player.collided = false;
+  }
+
+  if (ev.key === "Escape" || ev.key === "Esc") {
+    pauseGame();
+  }
+  // if (ev.which === 114) {
+  //   restartGame();
+  // }
+});
+
+function manageCanvas(t = player) {
   t.colour = "yellow";
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, screen.width, screen.height);
@@ -111,22 +114,25 @@ function manageCanvas(t = population[0]) {
   ctx.translate(-camX, camY);
 }
 
+var menu = new Layer("./static/game_menu.png");
+
 var background = new Layer(
-  "src/city_background_clean_long.png",
+  "./static/city_background_clean_long.png",
   0,
   0,
   camX,
-  0,
+  camY,
   0.7
 );
+
 var background2 = new Layer(
-  "src/city_background_clean.png",
+  "./static/city_background_clean.png",
   0,
   0,
   camX,
-  -150,
+  camY - screen.height / 8,
   0.5,
-  200
+  400
 );
 
 function drawPlatforms() {
@@ -168,12 +174,12 @@ function restartGame() {
     new Platform(startingplat.id + 1, startingplat.right() + 250)
   );
   score = 0;
-  // player = new Player();
-  population = createPopulation(popsize, []);
-  for (var i of savedEnemies) {
-    i.nn.model.dispose();
-  }
-  savedEnemies = [];
+  var player = new Player();
+  // population = createPopulation(popsize, []);
+  // for (var i of savedEnemies) {
+  //   i.nn.model.dispose();
+  // }
+  // savedEnemies = [];
   t1 = Date.now();
   t2 = 0;
   deltatime = 0.0;
@@ -193,7 +199,7 @@ function drawScore() {
   ctx.font = "48px Advent Pro";
   ctx.textAlign = "center";
   ctx.fillText(
-    `- ${Math.trunc(Math.pow(distance, 1.01))} -`,
+    `- ${Math.trunc(Math.pow(player.score, 1.01))} -`,
     screen.width / 2 + camX,
     screen.height / 12
   );
@@ -203,18 +209,25 @@ function drawObjects() {
   background2.draw();
   background.draw();
   drawPlatforms();
-  for (var item of population) {
-    item.draw();
-  }
+  player.draw();
+  // for (var item of population) {
+  //   item.draw();
+  // }
 }
 
 function updateObjects() {
   background2.move();
   background.move();
   movePlatforms();
-  for (var item of population) {
-    item.update();
-  }
+  player.update();
+  // for (var item of population) {
+  //   item.update();
+  // }
+}
+
+function pauseGame() {
+  paused = paused === true ? false : true;
+  menu.draw();
 }
 
 function Animate() {
@@ -230,19 +243,18 @@ function Animate() {
   //   // platfriction = 0;
   // }
 
-  if (deltatime >= fpsInterval) {
+  if (deltatime >= fpsInterval && paused !== true) {
     t1 = t2 - (deltatime % fpsInterval);
-    manageCanvas(getFurthestPlayer());
+    manageCanvas(player);
     drawObjects();
     for (var i = 0; i < 1; i++) {
       updateObjects();
       drawScore();
-      managePopulation();
-      furthestplayer = getFurthestPlayer();
+      // managePopulation();
+      // furthestplayer = getFurthestPlayer();
     }
-
-    // var copy = JSON.stringify(player);
-    // gamehistory.add(JSON.parse(copy));
+    var copy = JSON.stringify(player);
+    gamehistory.add(JSON.parse(copy));
     //   distance = 0;
     //    distance += calcDistance(deltatime);
   }
@@ -258,12 +270,14 @@ export {
   forcepos,
   detectCollision,
   platfriction,
-  // player,
+  player,
   gamespeed,
+  gamehistory,
   sweptAABB,
   findIntersect,
   camX,
+  camY,
   restartGame,
-  population,
+  //population,
   savedEnemies
 };

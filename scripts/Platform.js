@@ -36,8 +36,13 @@ export default class Platform extends Rectangle {
     this.obstaclequantity = 1;
     this.id = pId;
     this.passedplatgap = false;
+    this.friction = this.getFriction();
   }
 
+  getFriction() {
+    var frictionvalues = [0.8, 0.9, 0.65, 0.4];
+    return frictionvalues[Math.floor(randomInRange(0, frictionvalues.length))];
+  }
   getCoords(xMin, xMax, d, arrayy) {
     //recursive function which finds x values that satisfy the constraints passed in.
     // a random x value between a min and max value is generated.
@@ -92,7 +97,7 @@ export default class Platform extends Rectangle {
       this.coordinates = this.getCoords(
         this.left() + this.obstaclewidth + this.landingdistance,
         this.right() - this.obstaclewidth + this.landingdistance,
-        population[0].width + 100,
+        player.width + 100,
         []
       );
       this.placeObstacles(this.obstacleheight, this.obstaclewidth);

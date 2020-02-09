@@ -1,9 +1,11 @@
 import {
   surfacearray,
   gamespeed,
+  gamehistory,
   screen,
   forcepos,
   detectCollision,
+  newFriction,
   platfriction,
   ctx,
   player,
@@ -36,11 +38,11 @@ export default class Player extends Rectangle {
     this.initvel = 5;
     this.jumpspeed = 0.04 * screen.height * gamespeed;
     this.gravity = 0.0012 * screen.height * gamespeed;
-    this.isWithinGap;
     this.nextPlatformvar;
     this.grabID = true;
     this.platformtocheck;
     this.collided;
+    this.lastcollision = null;
     this.score = 0;
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
@@ -53,8 +55,8 @@ export default class Player extends Rectangle {
   update() {
     this.vel.x = this.initvel;
     //increase landing distance and platform distance with speed.
-    // this.initvel *= 1.1;
     this.fall();
+    this.lastcollision = null;
     this.handleCollisions(surfacearray);
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
@@ -62,42 +64,6 @@ export default class Player extends Rectangle {
     if (this.top() >= screen.height) {
       //  restartGame();
     }
-
-    if (this.withinGap() && this.grabID) {
-      this.nextPlatformvar = surfacearray[0].id + 1;
-      // this.nextPlatformvar = surfacearray[1];
-      this.grabID = false;
-      // forcepos(this, this.nextPlatform());
-      // this.isWithinGap = true;
-    }
-    if (this.withinGap()) {
-      // detectCollision(this, this.nextPlatform());
-    } else {
-      this.grabID = true;
-      // this.isWithinGap = false;
-    }
-    // if (gamehistory.peek() !== undefined) {
-    //   if (
-    //     gamehistory.peek().isWithinGap === true &&
-    //     this.withinGap() === false
-    //   ) {
-    //     this.callOnCollisionEnter = true;
-    //   }
-    // }
-
-    // if (
-    //   this.callOnCollisionEnter &&
-    //   detectCollision(this, this.platformUnder())
-    // ) {
-    //   this.onCollisionEnter();
-    //   this.callOnCollisionEnter = false;
-    // } else {
-    //   this.called = false;
-    // }
-
-    this.isWithinGap = this.withinGap();
-    // this.jump();
-    // console.log(gamehistory.peek());
   }
 
   fall() {
@@ -121,35 +87,28 @@ export default class Player extends Rectangle {
       if (object.instantiated) {
         //
         var collision = detectCollision(this, object);
+
         if (collision.val === true) {
+          this.onCollisionEnter(collision);
           resolveCollision(this, object, collision);
-          if (collision.loc === "top") {
-            this.colour = "green";
-            this.collided = true;
-          }
         } else {
           count++;
         }
-        // console.log(platform.id + " " + r);
       }
 
       if (object.obstacles.length > 0) {
         for (var obstacle of object.obstacles) {
-          // console.log(object.id);
-          // if (object.id === surfacearray[0].id) {
-          //   console.log(obstacle);
-          // }
-
           var coll = detectCollision(this, obstacle);
           if (coll.val === true) {
             resolveCollision(this, obstacle, coll);
             obstacle.colour = "blue";
             this.collided = true;
-            if (coll.loc === "left side") {
-              savedEnemies.push(
-                population.splice(population.indexOf(this), 1)[0]
-              );
-            }
+
+            // if (coll.loc === "left side") {
+            //   savedEnemies.push(
+            //     population.splice(population.indexOf(this), 1)[0]
+            //   );
+            // }
           }
         }
       }
@@ -216,13 +175,14 @@ export default class Player extends Rectangle {
     }
   }
 
-  // onCollisionEnter() {
-  //   if (this.called === undefined) {
-  //     this.called = false;
-  //   }
-  //   if (this.called === false) {
-  //     newFriction();
-  //     this.called = true;
-  //   }
-  // }
+  onCollisionEnter(collision) {
+    newFriction(collision);
+    // if (this.called === undefined) {
+    //   this.called = false;
+    // }
+    // if (this.called === false) {
+    //   newFriction();
+    //   this.called = true;
+    // }
+  }
 }
