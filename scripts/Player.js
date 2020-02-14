@@ -21,6 +21,7 @@ import { resolveCollision } from "./collisions.js";
 import NeuralNet from "./NeuralNetwork";
 import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
+import Sprite from "./Sprite.js";
 
 // const camX = -player.midpoint().x + screen.width / 2;
 
@@ -44,12 +45,17 @@ export default class Player extends Rectangle {
     this.collided;
     this.lastcollision = null;
     this.score = 0;
+    this.sprite;
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
   }
 
   draw() {
-    super.draw();
+    // super.draw();
+    if (this.sprite === undefined) {
+      this.sprite = this.createSprite();
+    }
+    this.sprite.drawSprite();
   }
 
   update() {
@@ -61,6 +67,7 @@ export default class Player extends Rectangle {
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
     this.updateScore(deltatime);
+
     if (this.top() >= screen.height) {
       //  restartGame();
     }
@@ -74,6 +81,12 @@ export default class Player extends Rectangle {
       this.vel.y -= this.jumpspeed;
       this.collided = false;
     }
+  }
+
+  createSprite() {
+    var imgsrc = "./static/26207034.png";
+    var sprite = new Sprite(10, 2, imgsrc);
+    return sprite;
   }
 
   updateScore(time) {

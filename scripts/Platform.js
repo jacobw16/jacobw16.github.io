@@ -18,7 +18,7 @@ export default class Platform extends Rectangle {
     pId = 0,
     px = screen.width / 6 + screen.width / 72 - screen.width / 2,
     py = randomInRange(screen.height / 2, screen.height - screen.height / 8),
-    pwidth = randomInRange(screen.width / 2, screen.width),
+    pwidth = randomInRange(screen.width / 2, 2 * screen.width),
     pheight = screen.height - py,
     pvel = 0,
     pcoordlimit = 3
@@ -31,16 +31,17 @@ export default class Platform extends Rectangle {
     this.landingdistance = this.width / 12;
     this.coordinatelimit = pcoordlimit;
     this.obstacledistance = this.landingdistance;
-    this.obstaclewidth = 100;
+    this.obstaclewidth = randomInRange(100, 200); // change so obstacle width is not constant from initialisation
     this.obstacleheight = 50;
-    this.obstaclequantity = 1;
+    this.obstaclequantity = 2;
     this.id = pId;
     this.passedplatgap = false;
     this.friction = this.getFriction();
   }
 
   getFriction() {
-    var frictionvalues = [0.8, 0.9, 0.65, 0.4];
+    // var frictionvalues = [0.8, 0.9, 0.65, 0.4];
+    var frictionvalues = [1];
     return frictionvalues[Math.floor(randomInRange(0, frictionvalues.length))];
   }
   getCoords(xMin, xMax, d, arrayy) {
@@ -69,15 +70,31 @@ export default class Platform extends Rectangle {
     for (var i = 0; i < this.coordinates.length; i++) {
       //loops through each generated coordinate and creates an obstacle object.
       if (this.obstacles.length < this.obstaclequantity) {
-        var newobj = new Obstacle(
-          i,
-          this.coordinates[i],
-          this.position.y - obsHeight,
-          obsWidth,
-          obsHeight,
-          this.vel.x
-        );
-        newobj.position.x -= newobj.width;
+        var random = randomInRange(0, 1);
+        if (random > 0.5) {
+          var newobj = new Obstacle(
+            i,
+            this.coordinates[i],
+            this.position.y - obsHeight,
+            obsWidth,
+            obsHeight,
+            this.vel.x
+          );
+          newobj.position.x -= newobj.width;
+        } else if (random < 0.5) {
+          var newobj = new Obstacle(
+            i,
+            this.coordinates[i],
+            this.position.y -
+              (obsHeight +
+                randomInRange(player.height / 2, player.height + 100)),
+            obsWidth,
+            obsHeight,
+            this.vel.x
+          );
+          newobj.position.x -= newobj.width;
+        }
+
         this.obstacles.push(newobj);
       } else {
         break;
@@ -97,7 +114,7 @@ export default class Platform extends Rectangle {
       this.coordinates = this.getCoords(
         this.left() + this.obstaclewidth + this.landingdistance,
         this.right() - this.obstaclewidth + this.landingdistance,
-        player.width + 100,
+        player.width + 100 + this.obstaclewidth,
         []
       );
       this.placeObstacles(this.obstacleheight, this.obstaclewidth);

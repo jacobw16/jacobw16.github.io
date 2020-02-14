@@ -32,7 +32,7 @@ export default class Layer {
     this.width = width;
     this.height = height;
     this.pointer = offset;
-    this.image = this.createImage();
+    this.image = this.createImage(this.src);
 
     this.getX = function() {
       // pointer points to the starting x value of the image to be displayed.
@@ -66,33 +66,27 @@ export default class Layer {
     };
   }
 
-  createImage() {
-    if (this.src !== undefined) {
+  createImage(src) {
+    if (src !== undefined) {
       var img = new Image();
       img.addEventListener("load", () => {
         console.log("loaded");
       });
 
-      if (this.src === "./static/city_background_clean_long.png") {
-        this.src = require("./static/city_background_clean_long.png");
-      } else if (this.src === "./static/city_background_clean.png") {
-        this.src = require("./static/city_background_clean.png");
-      } else if (this.src === "./static/game_menu.png") {
-        this.src = require("./static/game_menu.png");
+      if (src === "./static/city_background_clean_long.png") {
+        src = require("./static/city_background_clean_long.png");
+      } else if (src === "./static/city_background_clean.png") {
+        src = require("./static/city_background_clean.png");
+      } else if (src === "./static/game_menu.png") {
+        src = require("./static/game_menu.png");
+      } else if (src === "./static/26207034.png") {
+        src = require("./static/26207034.png");
       }
 
-      img.src = this.src;
+      img.src = src;
       return img;
     } else {
       ctx.fillRect(this.dx, this.dy, this.width, this.height);
     }
   }
 }
-
-// function imageFound() {
-//   alert("That image is found and loaded");
-// }
-
-// function imageNotFound() {
-//   alert("That image was not found.");
-// }

@@ -49,45 +49,45 @@ export default class NeuralNet {
     });
   }
 
-  // mutate(rate) {
-  //   tf.tidy(() => {
-  //     var weights = this.model.getWeights();
-  //     var newweights = [];
-  //     for (var arr of weights) {
-  //       var shape = arr.shape;
-  //       var values = arr.dataSync().slice();
-  //       for (var j of values) {
-  //         if (Math.random() < rate) {
-  //           j += randomInRange(-0.1, 0.1);
-  //         }
-  //       }
-  //       var newarr = tf.tensor(values, shape);
-  //       newweights.push(newarr);
-  //     }
-  //     this.model.setWeights(newweights);
-  //   });
-  // }
-
   mutate(rate) {
     tf.tidy(() => {
-      const weights = this.model.getWeights();
-      const mutatedWeights = [];
-      for (let i = 0; i < weights.length; i++) {
-        let tensor = weights[i];
-        let shape = weights[i].shape;
-        let values = tensor.dataSync().slice();
-        for (let j = 0; j < values.length; j++) {
+      var weights = this.model.getWeights();
+      var newweights = [];
+      for (var arr of weights) {
+        var shape = arr.shape;
+        var values = arr.dataSync().slice();
+        for (var j of values) {
           if (Math.random() < rate) {
-            let w = values[j];
-            values[j] = w + randomInRange(-0.1, 0.1);
+            j += randomInRange(-0.1, 0.1);
           }
         }
-        let newTensor = tf.tensor(values, shape);
-        mutatedWeights[i] = newTensor;
+        var newarr = tf.tensor(values, shape);
+        newweights.push(newarr);
       }
-      this.model.setWeights(mutatedWeights);
+      this.model.setWeights(newweights);
     });
   }
+
+  // mutate(rate) {
+  //   tf.tidy(() => {
+  //     const weights = this.model.getWeights();
+  //     const mutatedWeights = [];
+  //     for (let i = 0; i < weights.length; i++) {
+  //       let tensor = weights[i];
+  //       let shape = weights[i].shape;
+  //       let values = tensor.dataSync().slice();
+  //       for (let j = 0; j < values.length; j++) {
+  //         if (Math.random() < rate) {
+  //           let w = values[j];
+  //           values[j] = w + randomInRange(-0.1, 0.1);
+  //         }
+  //       }
+  //       let newTensor = tf.tensor(values, shape);
+  //       mutatedWeights[i] = newTensor;
+  //     }
+  //     this.model.setWeights(mutatedWeights);
+  //   });
+  // }
 
   copy() {
     return tf.tidy(() => {
