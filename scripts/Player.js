@@ -114,7 +114,7 @@ export default class Player extends Rectangle {
           var coll = detectCollision(this, obstacle);
           if (coll.val === true) {
             resolveCollision(this, obstacle, coll);
-            obstacle.colour = "blue";
+            // obstacle.colour = "blue";
             this.collided = true;
 
             // if (coll.loc === "left side") {

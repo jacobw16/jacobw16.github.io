@@ -55,6 +55,24 @@ export function sweptAABB(aabb1, object) {
       objtype: object.constructor.name,
       object: object
     };
+  }
+
+  var c4 = findIntersect(
+    aabb1.bottomright(),
+    aabb1.bottomright().resultant(aabb1.vel),
+    object.bottomleft(),
+    object.bottomright(),
+    object
+  );
+
+  if (!c4 === false && c4 !== undefined) {
+    return {
+      val: true,
+      intersection: c4,
+      loc: "bottom",
+      objtype: object.constructor.name,
+      object: object
+    };
   } else return { val: false };
 }
 
@@ -71,7 +89,7 @@ export function findIntersect(p1, p2, p3, p4, object) {
     x = (c1 * b2 - c2 * b1) / den,
     y = (c2 * a1 - a2 * c1) / den;
   // drawLine(p1, p2, "green");
-  drawLine(p3, p4, "yellow");
+  // drawLine(p3, p4, "yellow");
 
   if (den === 0) {
     return false;
@@ -124,6 +142,12 @@ export function resolveCollision(player, object, result) {
     player.colour = "green";
     player.collided = true;
     player.lastcollision = result;
+  }
+  if (result.loc === "bottom") {
+    player.vel.y *= result.intersection.t;
+    player.vel.y -= 0.1;
+    player.position.y += player.vel.y;
+    player.vel.y = 0;
   }
 
   if (result.loc === "left side") {

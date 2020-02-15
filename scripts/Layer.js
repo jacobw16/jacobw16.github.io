@@ -32,7 +32,7 @@ export default class Layer {
     this.width = width;
     this.height = height;
     this.pointer = offset;
-    this.image = this.createImage(this.src);
+    this.image = Layer.createImage(this.src);
 
     this.getX = function() {
       // pointer points to the starting x value of the image to be displayed.
@@ -66,7 +66,7 @@ export default class Layer {
     };
   }
 
-  createImage(src) {
+  static createImage(src) {
     if (src !== undefined) {
       var img = new Image();
       img.addEventListener("load", () => {
@@ -81,12 +81,12 @@ export default class Layer {
         src = require("./static/game_menu.png");
       } else if (src === "./static/26207034.png") {
         src = require("./static/26207034.png");
+      } else if (src === "./static/saw-blade.png") {
+        src = require("./static/saw-blade.png");
       }
 
       img.src = src;
       return img;
-    } else {
-      ctx.fillRect(this.dx, this.dy, this.width, this.height);
     }
   }
 }

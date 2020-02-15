@@ -253,8 +253,8 @@ function Animate() {
       // managePopulation();
       // furthestplayer = getFurthestPlayer();
     }
-    var copy = JSON.stringify(player);
-    gamehistory.add(JSON.parse(copy));
+    // var copy = JSON.stringify(player);
+    // gamehistory.add(JSON.parse(copy));
     //   distance = 0;
     //    distance += calcDistance(deltatime);
   }

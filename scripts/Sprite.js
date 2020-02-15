@@ -8,14 +8,18 @@ export default class Sprite extends Layer {
     src,
     dx = player.left(),
     dy = player.top(),
+    dw = player.width,
+    dh = player.height,
     xoffset = 20,
-    yoffset = 240
+    yoffset = 240,
+    sheetWidth = 955,
+    sheetHeight = 222
   ) {
-    super(src, 0, 0, dx, dy, 0, 0, player.width, player.height);
+    super(src, 0, 0, dx, dy, 0, 0, dw, dh);
     this.cols = cols;
     this.rows = rows;
-    this.frameWidth = 955 / cols;
-    this.frameHeight = 222 / rows;
+    this.frameWidth = sheetWidth / cols;
+    this.frameHeight = sheetHeight / rows;
     this.currentFrame = 0;
     this.updateRate = 1;
     this.waited = 0;
@@ -24,7 +28,7 @@ export default class Sprite extends Layer {
     this.rowSwitch = 0b0; //value of 1 indicates to switch to 2nd row of spritesheet.
   }
 
-  drawSprite() {
+  drawSprite(update = true) {
     ctx.drawImage(
       this.image,
       this.sx + this.sxoffset,
@@ -36,7 +40,9 @@ export default class Sprite extends Layer {
       this.width,
       this.height
     );
-    this.updateSprite();
+    if (update === true) {
+      this.updateSprite();
+    }
   }
 
   updateSprite() {
