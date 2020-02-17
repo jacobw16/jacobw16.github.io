@@ -14,7 +14,7 @@ import {
   savedEnemies,
   population
 } from "./main.js";
-import Rectangle from "./Rectangle.js";
+import AABB from "./AABB.js";
 import { getNormal, drawLine } from "./Helpers";
 import Vector from "./Vector";
 import { resolveCollision } from "./collisions.js";
@@ -25,7 +25,7 @@ import Sprite from "./Sprite.js";
 
 // const camX = -player.midpoint().x + screen.width / 2;
 
-export default class Player extends Rectangle {
+export default class Player extends AABB {
   constructor() {
     super(
       screen.width / 6 - screen.width / 12,
@@ -36,7 +36,7 @@ export default class Player extends Rectangle {
       0
     );
     // this.fallspeed = 9 * gamespeed * deltatime;#
-    this.initvel = 5;
+    this.initvel = 5 * gamespeed;
     this.jumpspeed = 0.04 * screen.height * gamespeed;
     this.gravity = 0.0012 * screen.height * gamespeed;
     this.nextPlatformvar;
@@ -46,6 +46,8 @@ export default class Player extends Rectangle {
     this.lastcollision = null;
     this.score = 0;
     this.sprite;
+    this.immune = false;
+    this.activePowerUp;
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
   }
@@ -67,6 +69,7 @@ export default class Player extends Rectangle {
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
     this.updateScore(deltatime);
+    console.log(this.collided);
 
     if (this.top() >= screen.height) {
       //  restartGame();
@@ -79,7 +82,7 @@ export default class Player extends Rectangle {
   jump() {
     if (this.collided) {
       this.vel.y -= this.jumpspeed;
-      this.collided = false;
+      // this.collided = false;
     }
   }
 
@@ -95,12 +98,13 @@ export default class Player extends Rectangle {
 
   handleCollisions(array) {
     var count = 0;
+    var objectcount = 0;
     for (var object of array) {
       //loops through all objects in a given array and checks if the player object is in collision with it.
       if (object.instantiated) {
         //
+        objectcount++;
         var collision = detectCollision(this, object);
-
         if (collision.val === true) {
           this.onCollisionEnter(collision);
           resolveCollision(this, object, collision);
@@ -110,12 +114,13 @@ export default class Player extends Rectangle {
       }
 
       if (object.obstacles.length > 0) {
+        objectcount++;
         for (var obstacle of object.obstacles) {
           var coll = detectCollision(this, obstacle);
-          if (coll.val === true) {
+          if (coll.val === true && this.immune === false) {
             resolveCollision(this, obstacle, coll);
             // obstacle.colour = "blue";
-            this.collided = true;
+            // this.collided = true;
 
             // if (coll.loc === "left side") {
             //   savedEnemies.push(
@@ -141,7 +146,7 @@ export default class Player extends Rectangle {
     //   }
     // }
 
-    if (count === array.length) {
+    if (count === objectcount) {
       this.colour = "black";
       this.collided = false;
     }

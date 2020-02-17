@@ -14,7 +14,7 @@ import {
   resolveCollision
 } from "./collisions.js";
 import { createPopulation, getFurthestPlayer, managePopulation } from "./ga.js";
-import { callbacks } from "@tensorflow/tfjs-layers";
+import _ from "lodash";
 
 let screen = document.getElementById("gamescreen");
 // screen.style.background = "black";
@@ -142,8 +142,9 @@ function drawPlatforms() {
     }
   }
 }
+
+var platformgap = 250;
 function movePlatforms() {
-  var platformgap = 250;
   for (var object of surfacearray) {
     object.move();
 
@@ -255,6 +256,10 @@ function Animate() {
     }
     // var copy = JSON.stringify(player);
     // gamehistory.add(JSON.parse(copy));
+
+    //using Lodash library's clone deep function to create a copy of the player object for use later.
+    var copy = _.cloneDeep(player);
+    gamehistory.add(copy);
     //   distance = 0;
     //    distance += calcDistance(deltatime);
   }
@@ -277,6 +282,7 @@ export {
   findIntersect,
   camX,
   camY,
+  platformgap,
   restartGame,
   //population,
   savedEnemies

@@ -1,6 +1,4 @@
-import { ctx, player, surfacearray } from "./main.js";
 import Vector from "./Vector";
-import { drawLine, difference, circle } from "./Helpers.js";
 
 export function sweptAABB(aabb1, object) {
   var c1 = findIntersect(
@@ -99,15 +97,6 @@ export function findIntersect(p1, p2, p3, p4, object) {
 
   var fx2 = (x - p3.x) / (p4.x - p3.x);
   var fy2 = (y - p3.y) / (p4.y - p3.y);
-
-  // if (
-  //   ((fx >= 0 && fx <= 1) || (fy >= 0 && fy <= 1)) &&
-  //   ((fx2 >= 0 && fx2 <= 1) || (fy2 >= 0 && fy2 <= 1))
-  // ) {
-  //   //should return fx/fy/fx2/fy2 rather than just fx
-
-  //   return { point: new Vector(x, y), t: fx };
-  // } else return false;
 
   if (
     fx >= 0 &&

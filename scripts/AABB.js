@@ -2,7 +2,7 @@ import { ctx, platfriction, deltatime } from "./main.js";
 import Vector from "./Vector.js";
 // import Obstacle from "./Obstacle.js";
 
-export default class Rectangle {
+export default class AABB {
   constructor(rx, ry, rwidth, rheight, xvel, yvel) {
     this.position = new Vector(rx, ry);
     this.width = rwidth;

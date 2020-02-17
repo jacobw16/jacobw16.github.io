@@ -1,4 +1,4 @@
-import Rectangle from "./Rectangle.js";
+import AABB from "./AABB.js";
 import Obstacle from "./Obstacle.js";
 import { drawLine } from "./Helpers";
 import {
@@ -13,7 +13,7 @@ import {
 import Vector from "./Vector";
 import { getNormal, subtract } from "./Vector.js";
 
-export default class Platform extends Rectangle {
+export default class Platform extends AABB {
   constructor(
     pId = 0,
     px = screen.width / 6 + screen.width / 72 - screen.width / 2,
@@ -24,7 +24,7 @@ export default class Platform extends Rectangle {
     pcoordlimit = 3
   ) {
     super(px, py, pwidth, pheight, pvel, 0);
-    this.u = pvel;
+    this.uv = pvel;
     this.instantiated = false;
     this.coordinates = [];
     this.obstacles = [];
@@ -33,7 +33,7 @@ export default class Platform extends Rectangle {
     this.obstacledistance = this.landingdistance;
     this.obstaclewidth = randomInRange(100, 200); // change so obstacle width is not constant from initialisation
     this.obstacleheight = 50;
-    this.obstaclequantity = 2;
+    this.obstaclequantity = 5;
     this.id = pId;
     this.passedplatgap = false;
     this.friction = this.getFriction();
@@ -80,7 +80,7 @@ export default class Platform extends Rectangle {
             obsHeight,
             this.vel.x
           );
-          newobj.position.x -= newobj.width;
+          // newobj.position.x -= newobj.width;
         } else if (random < 0.5) {
           var newobj = new Obstacle(
             i,
@@ -92,7 +92,7 @@ export default class Platform extends Rectangle {
             obsHeight,
             this.vel.x
           );
-          newobj.position.x -= newobj.width;
+          // newobj.position.x -= newobj.width;
         }
 
         this.obstacles.push(newobj);
@@ -109,11 +109,11 @@ export default class Platform extends Rectangle {
       i.draw();
     }
 
-    if (this.coordinates.length === 0 && this.instantiated) {
+    if (this.coordinates.length === 0 && this.instantiated && this.id !== 0) {
       //generates obstacles for instantiated platforms.
       this.coordinates = this.getCoords(
         this.left() + this.obstaclewidth + this.landingdistance,
-        this.right() - this.obstaclewidth + this.landingdistance,
+        this.right() - (this.obstaclewidth + this.landingdistance),
         player.width + 100 + this.obstaclewidth,
         []
       );
@@ -122,7 +122,7 @@ export default class Platform extends Rectangle {
   }
 
   move() {
-    this.vel.x = this.u * gamespeed * platfriction;
+    this.vel.x = this.uv * gamespeed * platfriction;
     for (var i of this.obstacles) {
       i.move();
     }

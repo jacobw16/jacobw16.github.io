@@ -1,8 +1,8 @@
-import Rectangle from "./Rectangle";
+import AABB from "./AABB";
 import Sprite from "./Sprite";
 import { screen, ctx } from "./main";
 import { detectCollision, resolveCollision } from "./collisions";
-export default class Blade extends Rectangle {
+export default class Blade extends AABB {
   constructor(
     x,
     y,
