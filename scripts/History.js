@@ -6,15 +6,15 @@ export default class History {
   constructor(maxhistory) {
     this.stack = [];
     //defines how many frames of historic values should be stored.
-    this.maxhistory = 200;
+    this.maxhistory = maxhistory;
   }
   add(obj) {
     if (this.stack.length < this.maxhistory) {
       //Checks if the length of the stack exceeds the maximum history size.
-      this.stack.push([obj, new Date(), new Date() - startTime]);
+      this.stack.push([obj, new Date()]);
     } else {
       this.stack.shift();
-      this.stack.push([obj, new Date(), new Date() - startTime]);
+      this.stack.push([obj, new Date()]);
     }
   }
   peek() {

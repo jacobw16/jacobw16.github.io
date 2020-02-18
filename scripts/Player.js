@@ -48,6 +48,7 @@ export default class Player extends AABB {
     this.sprite;
     this.immune = false;
     this.activePowerUp;
+
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
   }

@@ -45,8 +45,6 @@ var platfriction = 1;
 //   }
 // }
 
-var gamehistory = new History(20);
-
 export function newFriction(collision) {
   // console.log(collision);
   if (collision.object.constructor.name === "Platform") {
@@ -77,12 +75,15 @@ var deltatime = 0.0;
 const jumpmultiplier = 1;
 const delay = 0;
 const fps = 120;
-const timePerFrame = 1 / fps;
+const secondsPerFrame = 1 / fps;
 var distance = 0;
 var camX = 0;
 var camY = 0;
-//rewindDuration holds the amount of time the player can rewind in miliseconds using the set time taken for each frame.
-const rewindDuration = (timePerFrame * 20) / 1000;
+const secondsOfHistory = 2;
+const historyLength = secondsOfHistory * fps; // number of frames held in the history stack
+var playerRewindDuration = 2; // how long the player is allowed to rewind in seconds.
+var gamehistory = new History(historyLength);
+//rewindDuration holds the amount of time the player can rewind in seconds using the set time taken for each frame.
 var rewind = false;
 var paused;
 // var furthestplayer = population[0];
@@ -94,10 +95,10 @@ window.addEventListener("keydown", function(ev) {
   }
 
   if (ev.key === "R" || ev.key === "r") {
-    console.log("rewinding");
-
-    if (rewindDuration * 1000 > timePerFrame) {
+    if (playerRewindDuration > 0) {
       rewind = true;
+    } else {
+      rewind = false;
     }
   }
 
@@ -199,6 +200,9 @@ function updateGameObjects() {
       surfacearray.shift();
     }
   }
+  if (playerRewindDuration < 2 && rewind === false) {
+    playerRewindDuration += deltatime;
+  }
 
   for (var coin of coins) {
     coin.update();
@@ -226,7 +230,7 @@ function restartGame() {
   jumpmultiplier = 1;
   delay = 0;
   fps = 120;
-  timePerFrame = 1 / fps;
+  secondsPerFrame = 1 / fps;
   distance = 0;
   camX = 0;
   camY = 0;
@@ -291,10 +295,19 @@ function Animate() {
   //   // platfriction = 0;
   // }
 
-  if (deltatime >= timePerFrame && paused !== true) {
-    t1 = t2 - (deltatime % timePerFrame);
+  if (deltatime >= secondsPerFrame && paused !== true) {
+    t1 = t2 - (deltatime % secondsPerFrame);
     if (rewind === true) {
-      player = gamehistory.pop()[0];
+      if (gamehistory.stack.length > 0) {
+        var pop = gamehistory.pop();
+        player = pop[0][0];
+        surfacearray = pop[0][1];
+        playerRewindDuration -= secondsPerFrame;
+        console.log(playerRewindDuration);
+      } else {
+        rewind = false;
+      }
+      // coins = gamehistory.pop()[0][2];
     }
     manageCanvas(player);
     drawObjects();
@@ -303,13 +316,12 @@ function Animate() {
     // managePopulation();
     // furthestplayer = getFurthestPlayer();
 
-    // var copy = JSON.stringify(player);
-    // gamehistory.add(JSON.parse(copy));
-
     //using Lodash library's clone deep function to create a copy of the player object for use later.
     if (rewind === false) {
-      var copy = _.cloneDeep(player);
-      gamehistory.add(copy);
+      var playercopy = _.cloneDeep(player);
+      var surfacearraycopy = _.cloneDeep(surfacearray);
+      var coinsarraycopy = _.cloneDeep(coins);
+      gamehistory.add([playercopy, surfacearraycopy, coinsarraycopy]);
     }
 
     //   distance = 0;
