@@ -15,9 +15,10 @@ import {
 } from "./collisions.js";
 import { createPopulation, getFurthestPlayer, managePopulation } from "./ga.js";
 import _ from "lodash";
+import Coin from "./coin.js";
 
 let screen = document.getElementById("gamescreen");
-// screen.style.background = "black";
+screen.style.background = "rgba(032,032,032,0.3)";
 var heightratio = 9;
 var widthratio = 16;
 let ctx = screen.getContext("2d");
@@ -32,7 +33,7 @@ screen.width = width;
 screen.height = height;
 
 var nextplatform;
-
+var coins = [];
 var pointer = 0;
 var platfriction = 1;
 
@@ -69,16 +70,20 @@ var player = new Player();
 const popsize = 100;
 var savedEnemies = [];
 // var population = createPopulation(popsize, []);
+const startTime = new Date();
 var t1 = Date.now();
 var t2 = 0;
 var deltatime = 0.0;
-var jumpmultiplier = 1;
-var delay = 0;
-var fps = 120;
-var fpsInterval = 1 / fps;
+const jumpmultiplier = 1;
+const delay = 0;
+const fps = 120;
+const timePerFrame = 1 / fps;
 var distance = 0;
 var camX = 0;
 var camY = 0;
+//rewindDuration holds the amount of time the player can rewind in miliseconds using the set time taken for each frame.
+const rewindDuration = (timePerFrame * 20) / 1000;
+var rewind = false;
 var paused;
 // var furthestplayer = population[0];
 
@@ -88,12 +93,26 @@ window.addEventListener("keydown", function(ev) {
     player.collided = false;
   }
 
+  if (ev.key === "R" || ev.key === "r") {
+    console.log("rewinding");
+
+    if (rewindDuration * 1000 > timePerFrame) {
+      rewind = true;
+    }
+  }
+
   if (ev.key === "Escape" || ev.key === "Esc") {
     pauseGame();
   }
   // if (ev.which === 114) {
   //   restartGame();
   // }
+});
+
+window.addEventListener("keyup", function(ev) {
+  if (ev.key === "R" || ev.key === "r") {
+    rewind = false;
+  }
 });
 
 function manageCanvas(t = player) {
@@ -135,16 +154,21 @@ var background2 = new Layer(
   400
 );
 
-function drawPlatforms() {
+function drawGameObjects() {
   for (var i = 0; i < surfacearray.length; i++) {
     if (surfacearray[i].instantiated) {
       surfacearray[i].draw();
     }
   }
+  if (coins.length > 0) {
+    for (var coin of coins) {
+      coin.draw();
+    }
+  }
 }
 
 var platformgap = 250;
-function movePlatforms() {
+function updateGameObjects() {
   for (var object of surfacearray) {
     object.move();
 
@@ -156,6 +180,16 @@ function movePlatforms() {
       surfacearray.push(
         new Platform(object.id + 1, object.right() + platformgap)
       );
+      if (Math.random() < 0.5) {
+        coins.push(
+          new Coin(
+            object.right() + (platformgap / 2 - 25),
+            object.top() - screen.height / 1.5,
+            50,
+            50
+          )
+        );
+      }
       object.passedplatgap = true;
       // newplatform = false;
     }
@@ -164,6 +198,10 @@ function movePlatforms() {
       //remove platform from array when its off screen
       surfacearray.shift();
     }
+  }
+
+  for (var coin of coins) {
+    coin.update();
   }
 }
 
@@ -181,13 +219,14 @@ function restartGame() {
   //   i.nn.model.dispose();
   // }
   // savedEnemies = [];
+  startTime = new Date();
   t1 = Date.now();
   t2 = 0;
   deltatime = 0.0;
   jumpmultiplier = 1;
   delay = 0;
   fps = 120;
-  fpsInterval = 1 / fps;
+  timePerFrame = 1 / fps;
   distance = 0;
   camX = 0;
   camY = 0;
@@ -204,12 +243,20 @@ function drawScore() {
     screen.width / 2 + camX,
     screen.height / 12
   );
+  if (player.currentPower !== undefined) {
+    ctx.font = "36px Montserrat";
+    ctx.fillText(
+      `${player.currentPower.name.toUpperCase()}`,
+      screen.width / 2 + camX,
+      screen.height / 7
+    );
+  }
 }
 
 function drawObjects() {
   background2.draw();
   background.draw();
-  drawPlatforms();
+  drawGameObjects();
   player.draw();
   // for (var item of population) {
   //   item.draw();
@@ -219,7 +266,7 @@ function drawObjects() {
 function updateObjects() {
   background2.move();
   background.move();
-  movePlatforms();
+  updateGameObjects();
   player.update();
   // for (var item of population) {
   //   item.update();
@@ -244,22 +291,27 @@ function Animate() {
   //   // platfriction = 0;
   // }
 
-  if (deltatime >= fpsInterval && paused !== true) {
-    t1 = t2 - (deltatime % fpsInterval);
+  if (deltatime >= timePerFrame && paused !== true) {
+    t1 = t2 - (deltatime % timePerFrame);
+    if (rewind === true) {
+      player = gamehistory.pop()[0];
+    }
     manageCanvas(player);
     drawObjects();
-    for (var i = 0; i < 1; i++) {
-      updateObjects();
-      drawScore();
-      // managePopulation();
-      // furthestplayer = getFurthestPlayer();
-    }
+    updateObjects();
+    drawScore();
+    // managePopulation();
+    // furthestplayer = getFurthestPlayer();
+
     // var copy = JSON.stringify(player);
     // gamehistory.add(JSON.parse(copy));
 
     //using Lodash library's clone deep function to create a copy of the player object for use later.
-    var copy = _.cloneDeep(player);
-    gamehistory.add(copy);
+    if (rewind === false) {
+      var copy = _.cloneDeep(player);
+      gamehistory.add(copy);
+    }
+
     //   distance = 0;
     //    distance += calcDistance(deltatime);
   }
@@ -285,5 +337,7 @@ export {
   platformgap,
   restartGame,
   //population,
-  savedEnemies
+  savedEnemies,
+  coins,
+  startTime
 };

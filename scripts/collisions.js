@@ -115,8 +115,8 @@ export function findIntersect(p1, p2, p3, p4, object) {
   } else return false;
 }
 
-export function detectCollision(player, platform) {
-  var result = sweptAABB(player, platform);
+export function detectCollision(AABB, platform) {
+  var result = sweptAABB(AABB, platform);
   if (result === undefined) return false;
   return result;
 }

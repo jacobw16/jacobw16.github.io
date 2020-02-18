@@ -69,7 +69,6 @@ export default class Player extends AABB {
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
     this.updateScore(deltatime);
-    console.log(this.collided);
 
     if (this.top() >= screen.height) {
       //  restartGame();
@@ -132,20 +131,6 @@ export default class Player extends AABB {
       }
     }
 
-    // if (object.obstacles.length > 0) {
-    //   for (var obstacle of object.obstacles) {
-    //     // console.log(object.id);
-    //     // if (object.id === surfacearray[0].id) {
-    //     //   console.log(obstacle);
-    //     // }
-
-    //     var coll = detectCollision(this, obstacle);
-    //     if (coll.val === true) {
-    //       obstacle.colour = "blue";
-    //     }
-    //   }
-    // }
-
     if (count === objectcount) {
       this.colour = "black";
       this.collided = false;
@@ -153,15 +138,6 @@ export default class Player extends AABB {
   }
 
   nextPlatform() {
-    // for (let i = 0; i < surfacearray.length; i++) {
-    //   if (
-    //     surfacearray[i].left() > this.right() &&
-    //     surfacearray[i].instantiated
-    //   ) {
-    //     return surfacearray[i];
-    //   }
-    //   return surfacearray[1];
-    // }
     let nextplatformOBJ;
     for (let i = 0; i < surfacearray.length; i++) {
       if (surfacearray[i].id === this.nextPlatformvar) {

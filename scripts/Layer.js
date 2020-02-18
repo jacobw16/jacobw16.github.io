@@ -69,9 +69,7 @@ export default class Layer {
   static createImage(src) {
     if (src !== undefined) {
       var img = new Image();
-      img.addEventListener("load", () => {
-        console.log("loaded");
-      });
+      img.addEventListener("load", () => {});
 
       if (src === "./static/city_background_clean_long.png") {
         src = require("./static/city_background_clean_long.png");

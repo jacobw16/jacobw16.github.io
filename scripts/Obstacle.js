@@ -9,8 +9,13 @@ export default class Obstacle extends AABB {
     super(x, y, width, height, xvel, 0);
     this.id = id;
     this.instantiated = false;
-    this.blade = Math.random() < 0.5 ? this.createBlade() : null;
-    this.powerup = Math.random() < 1 ? this.createPowerUp() : null;
+    if (Math.random() < 0.5) {
+      this.blade = this.createBlade();
+      this.powerup = this.createPowerUp();
+    } else {
+      this.blade = null;
+      this.powerup = null;
+    }
   }
 
   draw() {
@@ -27,7 +32,7 @@ export default class Obstacle extends AABB {
   createBlade() {
     var blade = new Blade(
       this.midpoint().x - 25,
-      this.position.y - 300,
+      this.position.y - this.height,
       50,
       50,
       this.vel.x,
@@ -40,7 +45,7 @@ export default class Obstacle extends AABB {
   createPowerUp() {
     return new PowerUp(
       this.midpoint().x - 25,
-      (this.position.y - camY) / 2,
+      this.position.y - this.height,
       50,
       50,
       this.vel.x

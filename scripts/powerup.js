@@ -1,6 +1,6 @@
 import AABB from "./AABB";
 import { randomInRange, platformgap } from "./main";
-import { player, gamehistory, gamespeed } from "./main";
+import { player, gamehistory, gamespeed, screen } from "./main";
 import { detectCollision } from "./collisions";
 export class PowerUp extends AABB {
   constructor(spawnX, spawnY, width, height, xvel) {
@@ -33,6 +33,8 @@ export class PowerUp extends AABB {
 
   activatePower() {
     this.power();
+    screen.style.background = "rgba(0, 255, 0, 0.3)";
+    player.currentPower = this.power;
   }
 
   reduceDistance() {

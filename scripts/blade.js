@@ -37,23 +37,6 @@ export default class Blade extends AABB {
   }
 
   createSprite() {
-    // var img = new Image();
-    // img.onload = () => {
-    //   // console.log(img);
-    //   ctx.drawImage(
-    //     img,
-    //     0,
-    //     0,
-    //     1907,
-    //     1920,
-    //     this.left(),
-    //     this.top(),
-    //     this.width,
-    //     this.height
-    //   );
-    // };
-    // img.src = require("./static/saw-blade.png");
-    // ctx.drawImage(img, 0, this.left(), this.right());
     return new Sprite(
       1,
       1,
