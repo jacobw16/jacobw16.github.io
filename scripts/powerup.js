@@ -1,15 +1,15 @@
 import AABB from "./AABB";
-import { randomInRange, platformgap } from "./main";
-import { player, gamehistory, gamespeed, screen } from "./main";
+import { game } from "./main";
 import { detectCollision } from "./collisions";
+import Game from "./Game.js";
 export class PowerUp extends AABB {
   constructor(spawnX, spawnY, width, height, xvel) {
     super(spawnX, spawnY, width, height, xvel, 0);
     this.powers = [
-      this.reduceDistance,
+      this.reducedDistance,
       this.obstacleImmunity,
       this.halfSpeed,
-      this.refillRewindTime
+      this.rewindtimeRefill
     ];
     this.power = this.getPower();
   }
@@ -21,11 +21,11 @@ export class PowerUp extends AABB {
   }
 
   getPower() {
-    return this.powers[Math.floor(randomInRange(0, this.powers.length))];
+    return this.powers[Math.floor(Game.randomInRange(0, this.powers.length))];
   }
 
   handleCollisions() {
-    var collision = detectCollision(player, this);
+    var collision = detectCollision(game.player, this);
     if (collision.val === true) {
       this.activatePower();
     }
@@ -33,21 +33,25 @@ export class PowerUp extends AABB {
 
   activatePower() {
     this.power();
-    screen.style.background = "rgba(0, 255, 0, 0.3)";
-    player.currentPower = this.power;
+    game.screen.style.background = "rgba(0, 255, 0, 0.3)";
+    game.player.currentPower = this.power;
   }
 
-  reduceDistance() {
-    // platformgap /= 2;
+  reducedDistance() {
+    game.platformgap = game.platformgap / 2;
   }
 
   obstacleImmunity() {
-    player.immune = true;
+    game.player.immune = true;
   }
 
   halfSpeed() {
-    // gamespeed *= 0.5;
+    game.player.vel.x /= 2;
+    game.player.gravity /= 2;
+    console.log(game.player.initvel);
   }
 
-  refillRewindTime() {}
+  rewindtimeRefill() {
+    game.playerRewindDuration = 2;
+  }
 }

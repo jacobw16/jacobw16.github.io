@@ -1,6 +1,6 @@
 import AABB from "./AABB";
 import Sprite from "./Sprite";
-import { screen, ctx } from "./main";
+import { game } from "./main";
 import { detectCollision, resolveCollision } from "./collisions";
 export default class Blade extends AABB {
   constructor(
@@ -11,7 +11,7 @@ export default class Blade extends AABB {
     xvel,
     impulse,
     parentobj,
-    gravity = 0.0024 * screen.height
+    gravity = 0.0024 * game.screen.height
   ) {
     super(x, y, w, h, xvel, 0);
     this.impulse = impulse;
@@ -40,7 +40,7 @@ export default class Blade extends AABB {
     return new Sprite(
       1,
       1,
-      "saw-blade.png",
+      "./static/saw-blade.png",
       this.position.x,
       this.top(),
       this.width,

@@ -1,19 +1,19 @@
 import Vector from "./Vector";
-import { ctx } from "./main";
+import { game } from "./main";
 
 export function drawLine(from, to, colour = "green") {
-  ctx.strokeStyle = colour;
-  ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.lineTo(to.x, to.y);
-  ctx.stroke();
+  game.ctx.strokeStyle = colour;
+  game.ctx.beginPath();
+  game.ctx.moveTo(from.x, from.y);
+  game.ctx.lineTo(to.x, to.y);
+  game.ctx.stroke();
 }
 
 export function circle(where, colour = "rgb(0,255,0)") {
-  ctx.beginPath();
-  ctx.arc(where.x, where.y, 10, 0, Math.PI * 2);
-  ctx.strokeStyle = colour;
-  ctx.stroke();
+  game.ctx.beginPath();
+  game.ctx.arc(where.x, where.y, 10, 0, Math.PI * 2);
+  game.ctx.strokeStyle = colour;
+  game.ctx.stroke();
 }
 
 export function difference(x, y) {

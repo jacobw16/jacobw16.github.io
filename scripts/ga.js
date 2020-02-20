@@ -1,19 +1,14 @@
 import Player from "./Player";
-import {
-  camX,
-  population,
-  restartGame,
-  randomInRange,
-  savedEnemies
-} from "./main";
+import { game } from "./main";
+import Game from "./Game.js";
 import Enemy from "./Enemy";
 
 export function createPopulation(size = 250, arr) {
   for (var i = 0; i < size; i++) {
-    if (savedEnemies.length === 0 || savedEnemies === undefined) {
+    if (game.savedEnemies.length === 0 || game.savedEnemies === undefined) {
       arr.push(new Enemy());
     } else {
-      arr.push(Select(savedEnemies));
+      arr.push(Select(game.savedEnemies));
     }
   }
   return arr;
@@ -25,7 +20,7 @@ export function Select(pop) {
     scoreSum += i.score;
   }
 
-  var rand = randomInRange(0, scoreSum);
+  var rand = Game.randomInRange(0, scoreSum);
   var selected;
   for (var enemy of pop) {
     if (rand - enemy.score < 0) {
@@ -44,7 +39,7 @@ export function Select(pop) {
 export function getFurthestPlayer() {
   var highestscore = 0;
   var target;
-  for (var p of population) {
+  for (var p of game.population) {
     if (p.score > highestscore) {
       highestscore = p.score;
       target = p;
@@ -54,8 +49,8 @@ export function getFurthestPlayer() {
 }
 
 export function managePopulation() {
-  if (population.length === 0) {
+  if (game.population.length === 0) {
     console.log("new generation");
-    restartGame();
+    game.restartGame();
   }
 }

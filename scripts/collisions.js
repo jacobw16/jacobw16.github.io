@@ -53,25 +53,25 @@ export function sweptAABB(aabb1, object) {
       objtype: object.constructor.name,
       object: object
     };
-  }
-
-  var c4 = findIntersect(
-    aabb1.bottomright(),
-    aabb1.bottomright().resultant(aabb1.vel),
-    object.bottomleft(),
-    object.bottomright(),
-    object
-  );
-
-  if (!c4 === false && c4 !== undefined) {
-    return {
-      val: true,
-      intersection: c4,
-      loc: "bottom",
-      objtype: object.constructor.name,
-      object: object
-    };
   } else return { val: false };
+
+  // var c4 = findIntersect(
+  //   aabb1.bottomright(),
+  //   aabb1.bottomright().resultant(aabb1.vel),
+  //   object.bottomleft(),
+  //   object.bottomright(),
+  //   object
+  // );
+
+  // if (!c4 === false && c4 !== undefined) {
+  //   return {
+  //     val: true,
+  //     intersection: c4,
+  //     loc: "bottom",
+  //     objtype: object.constructor.name,
+  //     object: object
+  //   };
+  // } else return { val: false };
 }
 
 export function findIntersect(p1, p2, p3, p4, object) {
@@ -115,8 +115,9 @@ export function findIntersect(p1, p2, p3, p4, object) {
   } else return false;
 }
 
-export function detectCollision(AABB, platform) {
-  var result = sweptAABB(AABB, platform);
+export function detectCollision(boundingbox, platform) {
+  // console.log(platform);
+  var result = sweptAABB(boundingbox, platform);
   if (result === undefined) return false;
   return result;
 }

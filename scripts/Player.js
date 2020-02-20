@@ -1,23 +1,8 @@
-import {
-  surfacearray,
-  gamespeed,
-  gamehistory,
-  screen,
-  forcepos,
-  detectCollision,
-  newFriction,
-  platfriction,
-  ctx,
-  player,
-  deltatime,
-  restartGame,
-  savedEnemies,
-  population
-} from "./main.js";
+import { game } from "./main.js";
 import AABB from "./AABB.js";
 import { getNormal, drawLine } from "./Helpers";
 import Vector from "./Vector";
-import { resolveCollision } from "./collisions.js";
+import { detectCollision, resolveCollision } from "./collisions.js";
 import NeuralNet from "./NeuralNetwork";
 import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
@@ -28,17 +13,17 @@ import Sprite from "./Sprite.js";
 export default class Player extends AABB {
   constructor() {
     super(
-      screen.width / 6 - screen.width / 12,
-      surfacearray[0].position.y - (screen.height / 16 + 1) - 100,
-      screen.width / 36,
-      screen.height / 16,
+      game.screen.width / 6 - game.screen.width / 12,
+      game.surfacearray[0].position.y - (game.screen.height / 16 + 1) - 100,
+      game.screen.width / 36,
+      game.screen.height / 16,
       5, //surfacearray[0].u * gamespeed * platfriction,
       0
     );
     // this.fallspeed = 9 * gamespeed * deltatime;#
-    this.initvel = 5 * gamespeed;
-    this.jumpspeed = 0.04 * screen.height * gamespeed;
-    this.gravity = 0.0012 * screen.height * gamespeed;
+    this.initvel = 5;
+    this.jumpspeed = 0.04 * game.screen.height * game.gamespeed;
+    this.gravity = 0.0012 * game.screen.height * game.gamespeed;
     this.nextPlatformvar;
     this.grabID = true;
     this.platformtocheck;
@@ -62,14 +47,13 @@ export default class Player extends AABB {
   }
 
   update() {
-    this.vel.x = this.initvel;
     //increase landing distance and platform distance with speed.
     this.fall();
     this.lastcollision = null;
-    this.handleCollisions(surfacearray);
+    this.handleCollisions(game.surfacearray);
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
-    this.updateScore(deltatime);
+    this.updateScore(game.deltatime);
 
     if (this.top() >= screen.height) {
       //  restartGame();
@@ -101,8 +85,8 @@ export default class Player extends AABB {
     var objectcount = 0;
     for (var object of array) {
       //loops through all objects in a given array and checks if the player object is in collision with it.
+      // console.log(JSON.stringify(object));
       if (object.instantiated) {
-        //
         objectcount++;
         var collision = detectCollision(this, object);
         if (collision.val === true) {
@@ -121,7 +105,6 @@ export default class Player extends AABB {
             resolveCollision(this, obstacle, coll);
             // obstacle.colour = "blue";
             // this.collided = true;
-
             // if (coll.loc === "left side") {
             //   savedEnemies.push(
             //     population.splice(population.indexOf(this), 1)[0]
@@ -141,22 +124,22 @@ export default class Player extends AABB {
   nextPlatform() {
     let nextplatformOBJ;
     for (let i = 0; i < surfacearray.length; i++) {
-      if (surfacearray[i].id === this.nextPlatformvar) {
-        nextplatformOBJ = surfacearray[i];
+      if (game.surfacearray[i].id === this.nextPlatformvar) {
+        nextplatformOBJ = game.surfacearray[i];
       }
     }
     return nextplatformOBJ;
   }
 
   platformUnder() {
-    for (let i = 0; i < surfacearray.length; i++) {
+    for (let i = 0; i < game.surfacearray.length; i++) {
       if (
-        this.right() >= surfacearray[i].left() &&
-        this.left() <= surfacearray[i].right() &&
-        this.bottom() <= surfacearray[i].top() &&
-        surfacearray[i].instantiated
+        this.right() >= game.surfacearray[i].left() &&
+        this.left() <= game.surfacearray[i].right() &&
+        this.bottom() <= game.surfacearray[i].top() &&
+        game.surfacearray[i].instantiated
       ) {
-        return surfacearray[i];
+        return game.surfacearray[i];
       }
     }
     return false;
@@ -170,8 +153,14 @@ export default class Player extends AABB {
     }
   }
 
+  newFriction(collision) {
+    if (collision.object.constructor.name === "Platform") {
+      this.vel.x *= collision.object.friction;
+    }
+  }
+
   onCollisionEnter(collision) {
-    newFriction(collision);
+    this.newFriction(collision);
     // if (this.called === undefined) {
     //   this.called = false;
     // }

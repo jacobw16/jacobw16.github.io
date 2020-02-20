@@ -1,4 +1,5 @@
-import { ctx, platfriction, deltatime } from "./main.js";
+import { game } from "./main.js";
+import Game from "./Game.js";
 import Vector from "./Vector.js";
 // import Obstacle from "./Obstacle.js";
 
@@ -11,6 +12,8 @@ export default class AABB {
     this.halfsizeWidth = this.width / 2;
     this.halfsizeHeight = this.height / 2;
     this.colour = "black";
+    this.x = rx;
+    this.y = ry;
   }
 
   right() {
@@ -30,7 +33,7 @@ export default class AABB {
   }
 
   move() {
-    this.position.x -= this.vel.x * platfriction;
+    this.position.x -= this.vel.x; //* game.platfriction;
   }
 
   topleft() {
@@ -60,9 +63,14 @@ export default class AABB {
   }
 
   draw() {
-    ctx.fillStyle = this.colour;
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-    ctx.fillStyle = "black";
+    game.ctx.fillStyle = this.colour;
+    game.ctx.fillRect(
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
+    );
+    game.ctx.fillStyle = "black";
     // if (this.instantiated !== undefined) {
     //   // console.log(this.constructor);
     //   this.instantiated = true;

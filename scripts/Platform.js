@@ -1,25 +1,21 @@
 import AABB from "./AABB.js";
 import Obstacle from "./Obstacle.js";
 import { drawLine } from "./Helpers";
-import {
-  screen,
-  player,
-  randomInRange,
-  platfriction,
-  gamespeed,
-  camX,
-  population
-} from "./main.js";
+import { game } from "./main.js";
 import Vector from "./Vector";
 import { getNormal, subtract } from "./Vector.js";
+import Game from "./Game.js";
 
 export default class Platform extends AABB {
   constructor(
     pId = 0,
-    px = screen.width / 6 + screen.width / 72 - screen.width / 2,
-    py = randomInRange(screen.height / 2, screen.height - screen.height / 8),
-    pwidth = randomInRange(screen.width / 2, 2 * screen.width),
-    pheight = screen.height - py,
+    px = game.screen.width / 6 + game.screen.width / 72 - game.screen.width / 2,
+    py = Game.randomInRange(
+      game.screen.height / 2,
+      game.screen.height - game.screen.height / 8
+    ),
+    pwidth = Game.randomInRange(game.screen.width / 2, 2 * game.screen.width),
+    pheight = game.screen.height - py,
     pvel = 0,
     pcoordlimit = 3
   ) {
@@ -31,7 +27,7 @@ export default class Platform extends AABB {
     this.landingdistance = this.width / 12;
     this.coordinatelimit = pcoordlimit;
     this.obstacledistance = this.landingdistance;
-    this.obstaclewidth = randomInRange(100, 200); // change so obstacle width is not constant from initialisation
+    this.obstaclewidth = Game.randomInRange(100, 200); // change so obstacle width is not constant from initialisation
     this.obstacleheight = 50;
     this.obstaclequantity = 5;
     this.id = pId;
@@ -42,7 +38,9 @@ export default class Platform extends AABB {
   getFriction() {
     // var frictionvalues = [0.8, 0.9, 0.65, 0.4];
     var frictionvalues = [1];
-    return frictionvalues[Math.floor(randomInRange(0, frictionvalues.length))];
+    return frictionvalues[
+      Math.floor(Game.randomInRange(0, frictionvalues.length))
+    ];
   }
   getCoords(xMin, xMax, d, arrayy) {
     //recursive function which finds x values that satisfy the constraints passed in.
@@ -51,7 +49,7 @@ export default class Platform extends AABB {
     // is bigger than the maximum possible value, that single value will be returned.
     // if not, the new distance of the generated x value addded to the minimum distance between obstacles
     // is passed back into the function with the original maximum value
-    var x = randomInRange(xMin, xMax);
+    var x = Game.randomInRange(xMin, xMax);
     if (d + x >= xMax) {
       return arrayy;
     } else {
@@ -61,7 +59,7 @@ export default class Platform extends AABB {
   }
 
   isOffScreen() {
-    if (this.right() <= camX) {
+    if (this.right() <= game.camX) {
       return true;
     } else return false;
   }
@@ -70,7 +68,7 @@ export default class Platform extends AABB {
     for (var i = 0; i < this.coordinates.length; i++) {
       //loops through each generated coordinate and creates an obstacle object.
       if (this.obstacles.length < this.obstaclequantity) {
-        var random = randomInRange(0, 1);
+        var random = Game.randomInRange(0, 1);
         if (random > 0.5) {
           var newobj = new Obstacle(
             i,
@@ -87,7 +85,10 @@ export default class Platform extends AABB {
             this.coordinates[i],
             this.position.y -
               (obsHeight +
-                randomInRange(player.height / 2, player.height + 100)),
+                Game.randomInRange(
+                  game.player.height / 2,
+                  game.player.height + 100
+                )),
             obsWidth,
             obsHeight,
             this.vel.x
@@ -114,7 +115,7 @@ export default class Platform extends AABB {
       this.coordinates = this.getCoords(
         this.left() + this.obstaclewidth + this.landingdistance,
         this.right() - (this.obstaclewidth + this.landingdistance),
-        player.width + 100 + this.obstaclewidth,
+        game.player.width + 100 + this.obstaclewidth,
         []
       );
       this.placeObstacles(this.obstacleheight, this.obstaclewidth);
@@ -122,7 +123,7 @@ export default class Platform extends AABB {
   }
 
   move() {
-    this.vel.x = this.uv * gamespeed * platfriction;
+    this.vel.x = this.uv * game.gamespeed * game.platfriction;
     for (var i of this.obstacles) {
       i.move();
     }

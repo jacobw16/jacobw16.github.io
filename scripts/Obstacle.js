@@ -2,7 +2,7 @@ import AABB from "./AABB.js";
 import Sprite from "./Sprite.js";
 import Blade from "./blade.js";
 import { PowerUp } from "./powerup.js";
-import { camY, surfacearray } from "./main.js";
+import { game } from "./main.js";
 
 export default class Obstacle extends AABB {
   constructor(id, x, y, width, height, xvel) {
@@ -23,7 +23,7 @@ export default class Obstacle extends AABB {
   }
 
   move() {
-    // if (this.position.x === surfacearray[0].coordinates[0])
+    // if (this.position.x === game.surfacearray[0].coordinates[0])
     if (this.powerup !== null) this.powerup.update();
     if (this.blade !== null) this.blade.update();
     super.move();

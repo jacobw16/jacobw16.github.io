@@ -1,4 +1,5 @@
-import { randomInRange } from "./main";
+import { game } from "./main";
+import Game from "./Game.js";
 
 // import * as tf from "@tensorflow/tfjs";
 // import * as tfvis from "@tensorflow/tfjs-vis";
@@ -58,7 +59,7 @@ export default class NeuralNet {
         var values = arr.dataSync().slice();
         for (var j of values) {
           if (Math.random() < rate) {
-            j += randomInRange(-0.1, 0.1);
+            j += Game.randomInRange(-0.1, 0.1);
           }
         }
         var newarr = tf.tensor(values, shape);
@@ -79,7 +80,7 @@ export default class NeuralNet {
   //       for (let j = 0; j < values.length; j++) {
   //         if (Math.random() < rate) {
   //           let w = values[j];
-  //           values[j] = w + randomInRange(-0.1, 0.1);
+  //           values[j] = w + Game.randomInRange(-0.1, 0.1);
   //         }
   //       }
   //       let newTensor = tf.tensor(values, shape);

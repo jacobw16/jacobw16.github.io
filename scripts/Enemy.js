@@ -1,12 +1,6 @@
 import Player from "./Player.js";
 import NeuralNet from "./NeuralNetwork.js";
-import {
-  population,
-  deltatime,
-  screen,
-  surfacearray,
-  savedEnemies
-} from "./main.js";
+import { game } from "./main.js";
 export default class Enemy extends Player {
   constructor() {
     super();
@@ -20,14 +14,16 @@ export default class Enemy extends Player {
     //increase landing distance and platform distance with speed.
     // this.initvel *= 1.001;
     this.fall();
-    this.handleCollisions(surfacearray);
+    this.handleCollisions(game.game.surfacearray);
     this.position.y += this.vel.y;
     this.position.x += this.vel.x;
     this.makeDecision();
-    this.updateScore(deltatime);
+    this.updateScore(game.deltatime);
 
-    if (this.top() >= screen.height) {
-      savedEnemies.push(population.splice(population.indexOf(this), 1)[0]);
+    if (this.top() >= game.screen.height) {
+      game.savedEnemies.push(
+        game.population.splice(game.population.indexOf(this), 1)[0]
+      );
     }
   }
 
@@ -35,12 +31,12 @@ export default class Enemy extends Player {
     var smallestDistance = Infinity;
     var closestObstacle = null;
     if (
-      surfacearray[1] !== undefined &&
-      surfacearray[1].obstacles[0] !== undefined
+      game.surfacearray[1] !== undefined &&
+      game.surfacearray[1].obstacles[0] !== undefined
     ) {
-      closestObstacle = surfacearray[1].obstacles[0];
+      closestObstacle = game.surfacearray[1].obstacles[0];
     }
-    for (var platform of surfacearray) {
+    for (var platform of game.surfacearray) {
       if (platform.obstalces !== undefined) {
         for (var obstacle of platform.obstacles) {
           if (obstacle.position.x - this.position.x < smallestDistance) {
@@ -57,7 +53,7 @@ export default class Enemy extends Player {
     var minDistance = Infinity;
     var nextPlat = 0;
     var difference;
-    for (var platform of surfacearray) {
+    for (var platform of game.surfacearray) {
       difference = platform.left() - this.right();
       if (difference < minDistance && difference >= 0) {
         minDistance = difference;
@@ -68,7 +64,7 @@ export default class Enemy extends Player {
   }
 
   findCurrentPlatform() {
-    for (var platform of surfacearray) {
+    for (var platform of game.surfacearray) {
       if (this.right() >= platform.left() && this.right() <= this.right()) {
         //should really use player.left to check if player is past the right edge but
         // since collision is done from right, player is technically off the plat as soon as the right edge goes off.
@@ -82,8 +78,8 @@ export default class Enemy extends Player {
   makeDecision() {
     var inputs = [];
     //get inputs: xvel, currentx, xpos of nearest obstacle, xend of current platform, xstart of next platform
-    var currentplatform; // = surfacearray[0];
-    var nextplatform; //= surfacearray[1];
+    var currentplatform; // = game.surfacearray[0];
+    var nextplatform; //= game.surfacearray[1];
 
     // set first input as right x coordinate of player.
     inputs[0] = this.right();
@@ -95,14 +91,14 @@ export default class Enemy extends Player {
     // set 3rd input as left x coordinate of nearest obstacle.
     var currentDist = Infinity;
     var nearestObstacle = 0;
-    if (!surfacearray[1] === undefined) {
-      currentDist = surfacearray[1].obstacles[0].left() - this.right();
+    if (!game.surfacearray[1] === undefined) {
+      currentDist = game.surfacearray[1].obstacles[0].left() - this.right();
     } else {
       inputs[4] = 0;
     }
 
     //Loop through all platforms
-    for (var plat of surfacearray) {
+    for (var plat of game.surfacearray) {
       //find the platform that the player is currently on.
       if (
         this.left() >= plat.left() &&
@@ -126,7 +122,8 @@ export default class Enemy extends Player {
       }
     }
 
-    nextplatform = surfacearray[surfacearray.indexOf(currentplatform) + 1];
+    nextplatform =
+      game.surfacearray[game.surfacearray.indexOf(currentplatform) + 1];
     if (currentplatform === undefined) {
       currentplatform = 0;
       inputs[2] = 0;
@@ -138,7 +135,7 @@ export default class Enemy extends Player {
     }
 
     if (nextplatform === undefined) {
-      nextplatform = surfacearray[0];
+      nextplatform = game.surfacearray[0];
     }
 
     // if (this.findNextPlatform() !== null) {
@@ -153,8 +150,7 @@ export default class Enemy extends Player {
       inputs[3] = nextplatform.left();
     }
 
-    inputs[4] =
-      nearestObstacle !== 0 ? nearestObstacle.left() - 100 : 0;
+    inputs[4] = nearestObstacle !== 0 ? nearestObstacle.left() - 100 : 0;
     // inputs[5] =
     //   nearestObstacle !== 0 ? Math.abs(nearestObstacle.top() - this.bottom()) : 0;
     // inputs[6] = this.bottom();

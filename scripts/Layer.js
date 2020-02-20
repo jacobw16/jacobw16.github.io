@@ -1,12 +1,4 @@
-import {
-  screen,
-  ctx,
-  platfriction,
-  player,
-  camX,
-  camY,
-  population
-} from "./main.js";
+import { game } from "./main";
 // if (player === undefined) {
 //   var camX = 0;
 // } else camX = -player.midpoint().x + screen.width / 2;
@@ -16,12 +8,12 @@ export default class Layer {
     imagefilename,
     sx = 0,
     sy = 0,
-    dx = camX,
-    dy = camY,
+    dx = game.camX,
+    dy = game.camY,
     scrollspeed = 1,
     offset = 0,
-    width = screen.width,
-    height = screen.height
+    width = game.screen.width,
+    height = game.screen.height
   ) {
     this.src = imagefilename;
     this.sx = sx + offset;
@@ -39,31 +31,56 @@ export default class Layer {
       // the pointer increases by "scrollspeed" and as when the pointer
       // reaches a number higher than the screen's width, it will wrap back to the starting value
       // this creates the scrolling illusion.
-      this.pointer = this.pointer % (this.image.width - camX);
+      this.pointer = this.pointer % (this.image.width - game.camX);
       return this.pointer;
     };
 
-    this.draw = function() {
+    this.draw = function(
+      image = this.image,
+      sx = this.sx,
+      sy = this.sy,
+      swidth = this.width,
+      sheight = this.image.height,
+      dx = this.dx + game.camX,
+      dy = this.dy,
+      dwidth = this.width,
+      dheight = this.height
+    ) {
       // img to draw, sourcex, sourcey, source width, source height, destx, desty, destwidth, destheight
-      ctx.drawImage(
-        this.image,
-        this.sx,
-        0,
-        this.width,
-        this.image.height,
-        this.dx + camX,
-        this.dy,
-        this.width,
-        this.height
+      game.ctx.drawImage(
+        image,
+        sx,
+        sy,
+        swidth,
+        sheight,
+        dx,
+        dy,
+        dwidth,
+        dheight
       );
       // increments the pointer each frame
     };
 
     this.move = function() {
-      this.sx += camX === 0 ? 0 : this.scrollspeed;
+      this.sx += game.camX === 0 ? 0 : this.scrollspeed;
       //  this.dx -= this.scrollspeed;
       //   this.pointer += this.scrollspeed * 5;
     };
+  }
+
+  static drawImage(
+    image = this.image,
+    sx = this.sx,
+    sy = this.sy,
+    swidth = this.width,
+    sheight = this.image.height,
+    dx = this.dx + game.camX,
+    dy = this.dy,
+    dwidth = this.width,
+    dheight = this.height
+  ) {
+    // console.log(image);
+    game.ctx.drawImage(image, sx, sy, swidth, sheight, dx, dy, dwidth, dheight);
   }
 
   static createImage(src) {
@@ -81,6 +98,18 @@ export default class Layer {
         src = require("./static/26207034.png");
       } else if (src === "./static/saw-blade.png") {
         src = require("./static/saw-blade.png");
+      } else if (src === "./static/gold_coin_round_blank_1.png") {
+        src = require("./static/gold_coin_round_blank_1.png");
+      } else if (src === "./static/gold_coin_round_blank_2.png") {
+        src = require("./static/gold_coin_round_blank_2.png");
+      } else if (src === "./static/gold_coin_round_blank_3.png") {
+        src = require("./static/gold_coin_round_blank_3.png");
+      } else if (src === "./static/gold_coin_round_blank_4.png") {
+        src = require("./static/gold_coin_round_blank_4.png");
+      } else if (src === "./static/gold_coin_round_blank_5.png") {
+        src = require("./static/gold_coin_round_blank_5.png");
+      } else if (src === "./static/gold_coin_round_blank_6.png") {
+        src = require("./static/gold_coin_round_blank_6.png");
       }
 
       img.src = src;

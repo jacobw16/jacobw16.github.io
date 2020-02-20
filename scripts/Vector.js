@@ -1,7 +1,15 @@
 export default class Vector {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
+  constructor(vx, vy) {
+    this.x = vx;
+    this.y = vy;
+
+    // if (vx === NaN) console.log("bruh");
+    // try {
+    //   if (vx === NaN) throw "Invalid input";
+    //   if (vy === NaN) throw "Invalid input";
+    // } catch (error) {
+    //   console.error(error);
+    // }
   }
 
   resultant(vector) {
