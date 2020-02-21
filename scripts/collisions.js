@@ -1,9 +1,11 @@
 import Vector from "./Vector";
+import { game } from "./main";
 
-export function sweptAABB(aabb1, object) {
+export function sweptAABB(cornervector, object, aabb1 = game.player) {
+  if (cornervector.constructor.name !== "Vector") console.trace();
   var c1 = findIntersect(
-    aabb1.bottomright(),
-    aabb1.bottomright().resultant(aabb1.vel),
+    cornervector,
+    cornervector.resultant(aabb1.vel),
     object.bottomleft(),
     object.topleft(),
     object
@@ -20,8 +22,8 @@ export function sweptAABB(aabb1, object) {
   }
 
   var c2 = findIntersect(
-    aabb1.bottomright(),
-    aabb1.bottomright().resultant(aabb1.vel),
+    cornervector,
+    cornervector.resultant(aabb1.vel),
     object.topleft(),
     object.topright(),
     object
@@ -38,8 +40,8 @@ export function sweptAABB(aabb1, object) {
   }
 
   var c3 = findIntersect(
-    aabb1.bottomright(),
-    aabb1.bottomright().resultant(aabb1.vel),
+    cornervector,
+    cornervector.resultant(aabb1.vel),
     object.topright(),
     object.bottomright(),
     object
@@ -53,25 +55,25 @@ export function sweptAABB(aabb1, object) {
       objtype: object.constructor.name,
       object: object
     };
+  }
+
+  var c4 = findIntersect(
+    cornervector,
+    cornervector.resultant(aabb1.vel),
+    object.bottomleft(),
+    object.bottomright(),
+    object
+  );
+
+  if (!c4 === false && c4 !== undefined) {
+    return {
+      val: true,
+      intersection: c4,
+      loc: "bottom",
+      objtype: object.constructor.name,
+      object: object
+    };
   } else return { val: false };
-
-  // var c4 = findIntersect(
-  //   aabb1.bottomright(),
-  //   aabb1.bottomright().resultant(aabb1.vel),
-  //   object.bottomleft(),
-  //   object.bottomright(),
-  //   object
-  // );
-
-  // if (!c4 === false && c4 !== undefined) {
-  //   return {
-  //     val: true,
-  //     intersection: c4,
-  //     loc: "bottom",
-  //     objtype: object.constructor.name,
-  //     object: object
-  //   };
-  // } else return { val: false };
 }
 
 export function findIntersect(p1, p2, p3, p4, object) {
@@ -115,9 +117,9 @@ export function findIntersect(p1, p2, p3, p4, object) {
   } else return false;
 }
 
-export function detectCollision(boundingbox, platform) {
+export function detectCollision(corner, platform) {
   // console.log(platform);
-  var result = sweptAABB(boundingbox, platform);
+  var result = sweptAABB(corner, platform);
   if (result === undefined) return false;
   return result;
 }
@@ -135,7 +137,7 @@ export function resolveCollision(player, object, result) {
   }
   if (result.loc === "bottom") {
     player.vel.y *= result.intersection.t;
-    player.vel.y -= 0.1;
+    player.vel.y += 0.1;
     player.position.y += player.vel.y;
     player.vel.y = 0;
   }
@@ -143,5 +145,7 @@ export function resolveCollision(player, object, result) {
   if (result.loc === "left side") {
     player.vel.x *= result.intersection.t;
     player.vel.x -= 0.1;
+    player.position.x += player.vel.x;
+    player.vel.x = 0;
   }
 }

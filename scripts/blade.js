@@ -53,7 +53,7 @@ export default class Blade extends AABB {
   }
 
   handleCollisions() {
-    var coll = detectCollision(this, this.parent);
+    var coll = detectCollision(this.bottomright(), this.parent);
     if (coll.val === true && coll.loc === "bottom") {
       resolveCollision(this, this.parent, coll);
       this.vel.y -= this.impulse;

@@ -7,7 +7,6 @@ import NeuralNet from "./NeuralNetwork";
 import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
 import Sprite from "./Sprite.js";
-
 // const camX = -player.midpoint().x + screen.width / 2;
 
 export default class Player extends AABB {
@@ -32,7 +31,7 @@ export default class Player extends AABB {
     this.score = 0;
     this.sprite;
     this.immune = false;
-    this.activePowerUp;
+    this.currentPower;
 
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
@@ -48,13 +47,19 @@ export default class Player extends AABB {
 
   update() {
     //increase landing distance and platform distance with speed.
+    this.initvel = Math.min(15, Math.max(5, Math.pow(this.initvel, 1.001)));
+    this.vel.x = this.initvel;
     this.fall();
     this.lastcollision = null;
     this.handleCollisions(game.surfacearray);
-    this.position.y += this.vel.y;
-    this.position.x += this.vel.x;
+    if (this.currentPower && this.currentPower.name === "halfSpeed") {
+      this.position.y += this.vel.y / 2;
+      this.position.x += this.vel.x / 2;
+    } else {
+      this.position.y += this.vel.y;
+      this.position.x += this.vel.x;
+    }
     this.updateScore(game.deltatime);
-
     if (this.top() >= screen.height) {
       //  restartGame();
     }
@@ -88,10 +93,14 @@ export default class Player extends AABB {
       // console.log(JSON.stringify(object));
       if (object.instantiated) {
         objectcount++;
-        var collision = detectCollision(this, object);
-        if (collision.val === true) {
-          this.onCollisionEnter(collision);
-          resolveCollision(this, object, collision);
+        var collisionright = detectCollision(this.bottomright(), object);
+        var collisionleft = detectCollision(this.bottomleft(), object);
+        if (collisionright.val === true) {
+          this.onCollisionEnter(collisionright);
+          resolveCollision(this, object, collisionright);
+        } else if (collisionleft.val === true) {
+          this.onCollisionEnter(collisionleft);
+          resolveCollision(this, object, collisionleft);
         } else {
           count++;
         }
@@ -100,9 +109,10 @@ export default class Player extends AABB {
       if (object.obstacles.length > 0) {
         objectcount++;
         for (var obstacle of object.obstacles) {
-          var coll = detectCollision(this, obstacle);
-          if (coll.val === true && this.immune === false) {
-            resolveCollision(this, obstacle, coll);
+          var collbottom = detectCollision(this.bottomright(), obstacle);
+          var colltop = detectCollision(this.topright(), obstacle);
+          if (collbottom.val === true && this.immune === false) {
+            resolveCollision(this, obstacle, collbottom);
             // obstacle.colour = "blue";
             // this.collided = true;
             // if (coll.loc === "left side") {
@@ -110,6 +120,8 @@ export default class Player extends AABB {
             //     population.splice(population.indexOf(this), 1)[0]
             //   );
             // }
+          } else if (colltop.val === true && this.immune === false) {
+            resolveCollision(this, obstacle, colltop);
           }
         }
       }

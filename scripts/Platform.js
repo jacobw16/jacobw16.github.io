@@ -33,6 +33,7 @@ export default class Platform extends AABB {
     this.id = pId;
     this.passedplatgap = false;
     this.friction = this.getFriction();
+    this.objectDistance;
   }
 
   getFriction() {
@@ -112,12 +113,19 @@ export default class Platform extends AABB {
 
     if (this.coordinates.length === 0 && this.instantiated && this.id !== 0) {
       //generates obstacles for instantiated platforms.
-      this.coordinates = this.getCoords(
-        this.left() + this.obstaclewidth + this.landingdistance,
-        this.right() - (this.obstaclewidth + this.landingdistance),
-        game.player.width + 100 + this.obstaclewidth,
-        []
-      );
+      var min = this.left() + this.obstaclewidth + this.landingdistance;
+      var max = this.right() - (this.obstaclewidth + this.landingdistance);
+      this.objectDistance = game.player.width + 100 + this.obstaclewidth;
+      this.coordinates = this.getCoords(min, max, this.objectDistance, []);
+      this.coordinates = this.coordinates.sort();
+      if (this.coordinates[0] - min > this.objectDistance) {
+        this.coordinates = this.getCoords(
+          min,
+          this.coordinates[0],
+          this.objectDistance,
+          this.coordinates
+        );
+      }
       this.placeObstacles(this.obstacleheight, this.obstaclewidth);
     }
   }

@@ -2,8 +2,9 @@ import AABB from "./AABB";
 import { game } from "./main";
 import { detectCollision } from "./collisions";
 import Game from "./Game.js";
+import { thresholdedReLU } from "@tensorflow/tfjs-layers/dist/exports_layers";
 export class PowerUp extends AABB {
-  constructor(spawnX, spawnY, width, height, xvel) {
+  constructor(spawnX, spawnY, width, height, xvel, parentobj) {
     super(spawnX, spawnY, width, height, xvel, 0);
     this.powers = [
       this.reducedDistance,
@@ -12,6 +13,10 @@ export class PowerUp extends AABB {
       this.rewindtimeRefill
     ];
     this.power = this.getPower();
+    this.parent = parentobj;
+    this.startTimer = false;
+    this.timer = 0;
+    this.duration = 5;
   }
 
   update() {
@@ -25,9 +30,11 @@ export class PowerUp extends AABB {
   }
 
   handleCollisions() {
-    var collision = detectCollision(game.player, this);
-    if (collision.val === true) {
+    var collisionright = detectCollision(game.player.bottomright(), this);
+    var collisionleft = detectCollision(game.player.bottomleft(), this);
+    if (collisionright.val === true || collisionleft.val === true) {
       this.activatePower();
+      this.startTimer = true;
     }
   }
 
@@ -35,10 +42,27 @@ export class PowerUp extends AABB {
     this.power();
     game.screen.style.background = "rgba(0, 255, 0, 0.3)";
     game.player.currentPower = this.power;
+    console.log("start timer");
+  }
+
+  deactivatePower() {
+    if (this.power === this.reducedDistance) {
+      game.platformgap *= 2;
+    } else if (this.power === this.obstacleImmunity) {
+      game.player.immune = false;
+    } else if (this.power === this.halfSpeed) {
+      game.player.gravity *= 2;
+    }
+    game.player.currentPower = undefined;
+    game.screen.style.background = "rgba(032,032,032,0.3)";
+    this.parent.powerup = null;
+    console.log("deadded");
   }
 
   reducedDistance() {
-    game.platformgap = game.platformgap / 2;
+    if (game.player.currentPower !== this.reducedDistance) {
+      game.platformgap = game.platformgap / 2;
+    }
   }
 
   obstacleImmunity() {
@@ -46,9 +70,10 @@ export class PowerUp extends AABB {
   }
 
   halfSpeed() {
-    game.player.vel.x /= 2;
-    game.player.gravity /= 2;
-    console.log(game.player.initvel);
+    if (game.player.currentPower !== this.halfSpeed) {
+      game.player.gravity /= 2;
+    }
+    // player.vel.scale(0.5);
   }
 
   rewindtimeRefill() {

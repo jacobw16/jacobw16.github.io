@@ -3,6 +3,7 @@ import Sprite from "./Sprite.js";
 import Blade from "./blade.js";
 import { PowerUp } from "./powerup.js";
 import { game } from "./main.js";
+import { thresholdedReLU } from "@tensorflow/tfjs-layers/dist/exports_layers";
 
 export default class Obstacle extends AABB {
   constructor(id, x, y, width, height, xvel) {
@@ -23,8 +24,14 @@ export default class Obstacle extends AABB {
   }
 
   move() {
-    // if (this.position.x === game.surfacearray[0].coordinates[0])
-    if (this.powerup !== null) this.powerup.update();
+    // if (this.position.x === game.surfacearray[0].coordinates[0]))
+    if (this.powerup !== null) {
+      this.powerup.update();
+      if (this.powerup.startTimer) this.powerup.timer += game.deltatime;
+      if (this.powerup.timer > this.powerup.duration) {
+        this.powerup.deactivatePower();
+      }
+    }
     if (this.blade !== null) this.blade.update();
     super.move();
   }
@@ -32,7 +39,7 @@ export default class Obstacle extends AABB {
   createBlade() {
     var blade = new Blade(
       this.midpoint().x - 25,
-      this.position.y - this.height,
+      this.position.y - this.height - 50,
       50,
       50,
       this.vel.x,
@@ -48,7 +55,8 @@ export default class Obstacle extends AABB {
       this.position.y - this.height,
       50,
       50,
-      this.vel.x
+      this.vel.x,
+      this
     );
   }
 }

@@ -41,7 +41,7 @@ export default class Game {
     this.deltatime = 0.0;
     this.jumpmultiplier = 1;
     this.delay = 0;
-    this.fps = 120;
+    this.fps = 60;
     this.secondsPerFrame = 1 / this.fps;
     this.camX = 0;
     this.camY = 0;
@@ -58,6 +58,8 @@ export default class Game {
     this.platformgap = 250;
     this.addEventListeners();
     this.initialisedObjects = false;
+    this.powerupDuration = 5;
+    this.powerupTimer = 0;
   }
 
   update() {
@@ -70,9 +72,9 @@ export default class Game {
       this.initialisedObjects = true;
     }
 
-    if (this.deltatime > 0.15) {
-      this.deltatime = 0.15;
-    }
+    // if (this.deltatime > 0.15) {
+    //   this.deltatime = 0.15;
+    // }
 
     if (this.deltatime >= this.secondsPerFrame && this.paused !== true) {
       this.t1 = this.t2 - (this.deltatime % this.secondsPerFrame);
@@ -85,13 +87,7 @@ export default class Game {
       // furthestplayer = getFurthestPlayer();
 
       //using Lodash library's clone deep function to create a copy of the player object for use later.
-      if (this.rewind === false) {
-        var playercopy = _.cloneDeep(this.player);
-        var surfacearraycopy = _.cloneDeep(this.surfacearray);
-        var coinsarraycopy = _.cloneDeep(this.coins);
-        this.gamehistory.add([playercopy, surfacearraycopy, coinsarraycopy]);
-      }
-
+      if (this.rewind === false) this.saveCopies();
       //   distance = 0;
       //    distance += calcDistance(deltatime);
     }
@@ -213,16 +209,33 @@ export default class Game {
     // }
   }
 
+  saveCopies() {
+    var playercopy = _.cloneDeep(this.player);
+    var surfacearraycopy = _.cloneDeep(this.surfacearray);
+    var coinsarraycopy = _.cloneDeep(this.coins);
+    var screencolor = this.screen.style.background;
+    this.gamehistory.add([
+      playercopy,
+      surfacearraycopy,
+      coinsarraycopy,
+      screencolor
+    ]);
+  }
+
   rewindGame() {
     if (this.gamehistory.stack.length > 0 && this.playerRewindDuration > 0) {
+      // save the player's powerup state before rewinding and then re assign to previous so player cannot avoid powerup running out.
+      // var playercurrentPower = this.player.currentPower;
       this.pop = this.gamehistory.pop();
       this.player = this.pop[0];
       this.surfacearray = this.pop[1];
+      this.coins = this.pop[2];
+      this.screen.style.background = this.pop[3];
       this.playerRewindDuration -= this.secondsPerFrame;
+      // this.player.currentPower = playercurrentPower;
     } else {
       this.player = this.pop[0];
     }
-    // coins = gamehistory.pop()[0][2];
   }
 
   addEventListeners() {

@@ -31,8 +31,9 @@ export default class Coin extends PowerUp {
   }
 
   update() {
-    var collision = detectCollision(game.player, this);
-    if (collision.val === true) {
+    var collisionbottom = detectCollision(game.player.bottomright(), this);
+    var collisiontop = detectCollision(game.player.topright(), this);
+    if (collisionbottom.val === true || collisiontop.val === true) {
       this.collect();
     }
   }
