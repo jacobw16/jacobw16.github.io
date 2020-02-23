@@ -290,7 +290,7 @@ export default class Game {
     this.ctx.font = "48px Advent Pro";
     this.ctx.textAlign = "center";
     this.ctx.fillText(
-      `- ${Math.trunc(Math.pow(this.player.score, 1.01))}m -`,
+      `- ${Math.trunc(this.player.score)}m -`,
       this.screen.width / 2 + this.camX,
       this.screen.height / 12
     );

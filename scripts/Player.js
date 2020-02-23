@@ -50,6 +50,7 @@ export default class Player extends AABB {
   }
 
   setScores() {
+    this.score = Math.trunc(this.score);
     if (game.scores === "undefined" || game.scores === null) {
       var currentScoreArray = [];
     }
@@ -58,12 +59,15 @@ export default class Player extends AABB {
 
     if (currentScoreArray === null) currentScoreArray = [];
     var nameInScores = false;
-    if (this.score > game.currenthighScore.score) {
+    if (
+      game.currenthighScore === null ||
+      this.score > game.currenthighScore.score
+    ) {
       game.showhighScoreAlert = true;
     }
 
     if (
-      game.currenthighScore.score === null ||
+      game.currenthighScore === null ||
       game.currenthighScore.score < this.score
     ) {
       var saveString = JSON.stringify({
