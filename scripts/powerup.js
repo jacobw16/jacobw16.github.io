@@ -77,7 +77,8 @@ export class PowerUp extends AABB {
       game.player.immune = false;
     } else if (this.power === this.halfSpeed) {
       game.player.gravity *= 2;
-      game.player.velocityMultiplier *= 2;
+      game.player.velocityMultiplierx *= 2;
+      game.player.velocityMultipliery *= 2;
     }
     this.startTimer = false;
     game.screen.style.background = "rgba(32,32,32,0.3)";
@@ -97,7 +98,8 @@ export class PowerUp extends AABB {
   halfSpeed() {
     if (game.player.currentPower !== this.halfSpeed) {
       game.player.gravity /= 2;
-      game.player.velocityMultiplier /= 2;
+      game.player.velocityMultiplierx /= 2;
+      game.player.velocityMultipliery /= 2;
     }
     // player.vel.scale(0.5);
   }

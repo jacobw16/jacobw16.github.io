@@ -22,7 +22,10 @@
       }
       #gameOver,
       #pausedMenu,
-      #mainMenu {
+      #mainMenu,
+      #loginPage,
+      #helpPage,
+      #scoresPage {
         position: absolute;
         visibility: hidden;
         text-align: center;
@@ -34,7 +37,8 @@
         color: white;
         text-align: center;
       }
-      h3 {
+      h3,
+      p {
         font-family: "Righteous";
         color: white;
         text-align: center;
@@ -44,7 +48,10 @@
       #exitBtn,
       #resumeBtn,
       #helpBtn,
-      #playBtn {
+      #playBtn,
+      #helpProceed,
+      #scoresBtn,
+      #backBtn {
         border: 2px solid black;
       }
 
@@ -61,6 +68,18 @@
         background-color: #ffffff9a;
       }
       #exitBtn:hover {
+        background-color: #ffffff9a;
+      }
+
+      #helpProceed:hover {
+        background-color: #ffffff9a;
+      }
+
+      #scoresBtn:hover {
+        background-color: #ffffff9a;
+      }
+
+      #backBtn:hover {
         background-color: #ffffff9a;
       }
 
@@ -82,6 +101,28 @@
         margin-top: 0;
         visibility: hidden;
       }
+
+      #loginForm {
+        font-size: 40px;
+        font-family: "Righteous";
+        margin-bottom: 0;
+        margin-top: 0;
+      }
+
+      #username {
+        height: 35px;
+        font-size: 20px;
+        text-align: center;
+      }
+
+      #submitBtn {
+        width: 100px;
+        height: 50px;
+        font-family: "Righteous";
+      }
+      #scores {
+        text-align: center;
+      }
       .title {
         font-size: 256;
         margin-bottom: 0;
@@ -94,14 +135,22 @@
       <h1 class="title">JUMP</h1>
       <h3 id="playBtn">Play</h3>
       <h3 id="helpBtn">Help</h3>
+      <h3 id="scoresBtn">Scores</h3>
     </section>
 
     <section id="pausedMenu">
       <h1 class="title">PAUSED</h1>
       <h3 id="resumeBtn">Resume</h3>
       <h3 id="restartBtn">Restart</h3>
-      <h3 id="helpBtn">Help</h3>
       <h3 id="exitBtn">Exit</h3>
+    </section>
+
+    <section id="loginPage">
+      <form id="loginForm">
+        <label for="username">Enter username:</label>
+        <input type="text" id="username" name="username"><br><br>
+        <button type="submit" id="submitBtn">ENTER</button>
+      </form>
     </section>
 
     <section id="gameOver">
@@ -110,6 +159,31 @@
       <h3 id="exitBtn">Exit</h3>
       <h1 id="highScoreAlert">NEW HIGHSCORE</h1>
     </section>
+
+    <section id="helpPage">
+      <p id="textpage">
+        CONTROLS: <br>
+        SPACE to jump<br>
+        Press CTRL to slide.<br>
+        Hold R to rewind time.<br>
+        Press ESC to pause.
+      </p>
+
+      <p id="textpage">
+        The game gets faster over time and hitting obstacles will slow you to
+        your disadvantage. Green Orbs contain powerups including 1/2 speed,
+        reduced distance, rewind time refill and obstacle immunity. Coins can be
+        collected on the way to boost your score.
+      </p>
+
+      <h3 id="helpProceed">Proceed</h3>
+    </section>
+
+    <section id="scoresPage">
+      <p id="scores"></p>
+      <h3 id="backBtn">Back</h3>
+    </section>
+
     <div id="overlay"></div>
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>

@@ -1,16 +1,8 @@
-import {
-  game
-} from "./main.js";
+import { game } from "./main.js";
 import AABB from "./AABB.js";
-import {
-  getNormal,
-  drawLine
-} from "./Helpers";
+import { getNormal, drawLine } from "./Helpers";
 import Vector from "./Vector";
-import {
-  detectCollision,
-  resolveCollision
-} from "./collisions.js";
+import { detectCollision, resolveCollision } from "./collisions.js";
 import NeuralNet from "./NeuralNetwork";
 import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
@@ -41,7 +33,9 @@ export default class Player extends AABB {
     this.sprite;
     this.immune = false;
     this.currentPower;
-    this.velocityMultiplier = 1;
+    this.velocityMultipliery = 1;
+    this.velocityMultiplierx = 1;
+
     this.maxvelocity = 30;
     this.velocitygrowthRate = 0.5;
     // this.prevstate = this;
@@ -55,21 +49,55 @@ export default class Player extends AABB {
     this.sprite.drawSprite();
   }
 
+  setScores() {
+    if (game.scores === "undefined" || game.scores === null) {
+      var currentScoreArray = [];
+    }
+    if (game.scores !== "undefined")
+      var currentScoreArray = JSON.parse(game.scores);
+
+    if (currentScoreArray === null) currentScoreArray = [];
+    var nameInScores = false;
+    if (this.score > game.currenthighScore.score) {
+      game.showhighScoreAlert = true;
+    }
+
+    if (
+      game.currenthighScore.score === null ||
+      game.currenthighScore.score < this.score
+    ) {
+      var saveString = JSON.stringify({
+        score: this.score,
+        username: this.name
+      });
+      localStorage.setItem("highScore", saveString);
+    }
+    for (var i = 0; i < currentScoreArray.length; i++) {
+      if (
+        currentScoreArray[i].username === this.name &&
+        currentScoreArray[i].score < this.score
+      ) {
+        currentScoreArray[i].score = this.score;
+      } else if (currentScoreArray[i].username === this.name) {
+        nameInScores = true;
+      }
+    }
+    if (nameInScores === false) {
+      var saveString = {
+        score: this.score,
+        username: this.name
+      };
+      currentScoreArray.push(saveString);
+      localStorage.setItem("Scores", JSON.stringify(currentScoreArray));
+    }
+    game.setState("GAMEOVER");
+  }
+
   update() {
     //increase landing distance and platform distance with speed.
-
+    if (!this.name) this.name = game.playerName;
     if (this.top() > game.screen.height) {
-      if (this.score > game.currenthighScore) {
-        game.showhighScoreAlert = true;
-      }
-
-      if (
-        game.currenthighScore === null ||
-        game.currenthighScore < this.score
-      ) {
-        localStorage.setItem("highScore", this.score);
-      }
-      game.setState("GAMEOVER");
+      this.setScores();
     }
     if (this.vel.x < this.maxvelocity) {
       this.vel.x += 0.01;
@@ -87,8 +115,8 @@ export default class Player extends AABB {
     //   this.position.y += this.vel.y;
     //   this.position.x += this.vel.x;
     // }
-    this.position.y += this.vel.y * this.velocityMultiplier;
-    this.position.x += this.vel.x * this.velocityMultiplier;
+    this.position.y += this.vel.y * this.velocityMultipliery;
+    this.position.x += this.vel.x * this.velocityMultiplierx;
     this.updateScore(game.deltatime);
     if (this.top() >= screen.height) {
       //  restartGame();
@@ -232,7 +260,7 @@ export default class Player extends AABB {
 
   newFriction(collision) {
     if (collision.object.constructor.name === "Platform") {
-      this.vel.x *= collision.object.friction;
+      this.velocityMultiplierx = collision.object.friction;
     }
   }
 

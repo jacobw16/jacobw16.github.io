@@ -11,25 +11,22 @@ import {
   forcepos,
   resolveCollision
 } from "./collisions.js";
-import {
-  createPopulation,
-  getFurthestPlayer,
-  managePopulation
-} from "./ga.js";
+import { createPopulation, getFurthestPlayer, managePopulation } from "./ga.js";
 import _ from "lodash";
 import Coin from "./coin.js";
-import {
-  restartGame
-} from "./main.js";
-import {
-  drawLine
-} from "./Helpers";
+import { restartGame } from "./main.js";
+import { drawLine } from "./Helpers";
 
 export default class Game {
+  //Class that manages all game logic and drawing.
+
   constructor(state = "RUNNING") {
+    //using 16:9 aspect ratio.
     this.heightratio = 9;
     this.widthratio = 16;
+    //loading the canvas HTML element into game attributes.
     this.screen = document.getElementById("gamescreen");
+
     this.menuOverlay = document.getElementById("overlay");
     this.gameOverMenu = {
       menu: document.getElementById("gameOver")
@@ -45,7 +42,13 @@ export default class Game {
     this.playBtn = document.getElementById("playBtn");
     this.restartBtn = document.getElementById("restartBtn");
     this.exitBtn = document.getElementById("exitBtn");
-
+    this.loginPage = {
+      menu: document.getElementById("loginPage"),
+      form: document.getElementById("loginForm"),
+      username: document.getElementById("username")
+    };
+    this.helpPage = document.getElementById("helpPage");
+    this.scoresPage = document.getElementById("scoresPage");
     this.ctx = this.screen.getContext("2d");
     this.screen.width =
       ((window.innerWidth + window.innerHeight) /
@@ -61,13 +64,15 @@ export default class Game {
     this.powerups = [];
     this.state = state;
     this.player;
-    this.currenthighScore = localStorage.getItem("highScore");
+    this.playerName;
+    this.currenthighScore = JSON.parse(localStorage.getItem("highScore"));
+    this.scores = localStorage.getItem("Scores");
     this.showhighScoreAlert;
     this.highScoreAlert = document.getElementById("highScoreAlert");
     this.popsize = 100;
     this.savedEnemies = [];
     this.startTime = new Date();
-    this.t1 = Date.now();
+    this.t1;
     this.t2 = 0;
     this.deltatime = 0.0;
     this.jumpmultiplier = 1;
@@ -127,10 +132,14 @@ export default class Game {
     } else if (this.state === "PAUSED") {
       //display pause menu.
       this.showMenu(this.pausedMenu.menu);
+    } else if (this.state === "LOGIN") {
+      this.showMenu(this.loginPage.menu);
     } else if (this.state === "GAMEOVER") {
       //display game over menu.
       if (this.showhighScoreAlert) {
-        this.highScoreAlert.innerHTML = `NEW HIGHSCORE: ${Math.trunc(this.player.score)}`;
+        this.highScoreAlert.innerHTML = `NEW HIGHSCORE: ${
+          this.player.name
+        }, ${Math.trunc(this.player.score)}`;
         this.highScoreAlert.style.visibility = "visible";
       }
       this.showMenu(this.gameOverMenu.menu);
@@ -184,6 +193,7 @@ export default class Game {
   }
 
   hideMenu(menu) {
+    this.menuOverlay.style.visibility = "hidden";
     menu.style.visibility = "hidden";
   }
 
@@ -212,6 +222,7 @@ export default class Game {
   initialiseObjects() {
     this.initPlatforms();
     this.initLayers();
+    this.t1 = Date.now();
   }
 
   updateGameObjects() {
@@ -364,10 +375,16 @@ export default class Game {
 
   addEventListeners() {
     document.getElementById("restartBtn").addEventListener("click", () => {
-      restartGame();
       this.hideMenu(this.gameOverMenu.menu);
       this.hideMenu(this.pausedMenu.menu);
-      this.hideMenu(this.menuOverlay);
+      restartGame();
+    });
+    this.loginPage.form.addEventListener("submit", ev => {
+      ev.preventDefault();
+      this.playerName = this.loginPage.username.value;
+      this.loginPage.username.value = "";
+      this.hideMenu(this.loginPage.menu);
+      this.setState("RUNNING");
     });
 
     this.resumeBtn.addEventListener("click", ev => {
@@ -376,15 +393,43 @@ export default class Game {
 
     this.playBtn.addEventListener("click", ev => {
       this.hideMenu(this.mainMenu.menu);
-      this.hideMenu(this.menuOverlay);
-      this.setState("RUNNING");
+      this.setState("LOGIN");
     });
 
     this.exitBtn.addEventListener("click", ev => {
       this.hideMenu(this.pausedMenu.menu);
       this.hideMenu(this.gameOverMenu.menu);
-
       restartGame("MAINMENU");
+    });
+
+    this.helpBtn.addEventListener("click", () => {
+      this.setState("HELPMENU");
+      this.hideMenu(this.mainMenu.menu);
+      this.showMenu(this.helpPage);
+    });
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      this.setState("MAINMENU");
+      this.hideMenu(this.scoresPage);
+    });
+
+    document.getElementById("scoresBtn").addEventListener("click", () => {
+      //load scores into paragarph element.
+      var para = document.getElementById("scores");
+      for (var scoreObj of JSON.parse(this.scores)) {
+        var append = `User: ${scoreObj.username}, Score: ${scoreObj.score} \n`;
+        para.textContent += append;
+        para.appendChild(document.createElement("br"));
+      }
+
+      this.setState("SCORESMENU");
+      this.hideMenu(this.mainMenu.menu);
+      this.showMenu(this.scoresPage);
+    });
+
+    document.getElementById("helpProceed").addEventListener("click", () => {
+      this.hideMenu(this.helpPage);
+      this.setState("MAINMENU");
     });
 
     window.addEventListener("keydown", ev => {
@@ -419,19 +464,18 @@ export default class Game {
   pauseGame() {
     if (this.state === "RUNNING") {
       this.setState("PAUSED");
-      this.savedDeltatime = this.deltatime;
+      // this.savedDeltatime = this.deltatime;
     } else if (this.state === "PAUSED") {
       this.hideMenu(this.pausedMenu.menu);
-      this.hideMenu(this.menuOverlay);
       this.setState("RUNNING");
-      this.deltatime = this.savedDeltatime;
+      this.t1 = Date.now();
     }
   }
   unpauseGame() {
     this.deltatime = this.savedDeltatime;
     this.hideMenu(this.pausedMenu.menu);
-    this.hideMenu(this.menuOverlay);
     this.setState("RUNNING");
+    this.t1 = Date.now();
   }
 
   drawGameObjects() {
