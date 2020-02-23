@@ -14,7 +14,7 @@ export default class Platform extends AABB {
       game.screen.height / 2,
       game.screen.height - game.screen.height / 8
     ),
-    pwidth = Game.randomInRange(game.screen.width / 2, 2 * game.screen.width),
+    pwidth = Game.randomInRange(game.platformMinWidth, game.platformMaxWidth),
     pheight = game.screen.height - py,
     pvel = 0,
     pcoordlimit = 3
@@ -24,12 +24,12 @@ export default class Platform extends AABB {
     this.instantiated = false;
     this.coordinates = [];
     this.obstacles = [];
-    this.landingdistance = this.width / 12;
-    this.coordinatelimit = pcoordlimit;
-    this.obstacledistance = this.landingdistance;
-    this.obstaclewidth = Game.randomInRange(100, 200); // change so obstacle width is not constant from initialisation
-    this.obstacleheight = 50;
-    this.obstaclequantity = 5;
+    this.landingDistance = this.width / 12;
+    this.coordinateLimit = pcoordlimit;
+    this.obstacleDistance = this.landingDistance;
+    this.obstacleWidth = Game.randomInRange(100, 200); // change so obstacle width is not constant from initialisation
+    this.obstacleHeight = 50;
+    this.obstacleQuantity = 5;
     this.id = pId;
     this.passedplatgap = false;
     this.friction = this.getFriction();
@@ -38,7 +38,7 @@ export default class Platform extends AABB {
 
   getFriction() {
     // var frictionvalues = [0.8, 0.9, 0.65, 0.4];
-    var frictionvalues = [1];
+    var frictionvalues = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
     return frictionvalues[
       Math.floor(Game.randomInRange(0, frictionvalues.length))
     ];
@@ -68,7 +68,7 @@ export default class Platform extends AABB {
   placeObstacles(obsHeight, obsWidth) {
     for (var i = 0; i < this.coordinates.length; i++) {
       //loops through each generated coordinate and creates an obstacle object.
-      if (this.obstacles.length < this.obstaclequantity) {
+      if (this.obstacles.length < this.obstacleQuantity) {
         var random = Game.randomInRange(0, 1);
         if (random > 0.5) {
           var newobj = new Obstacle(
@@ -77,7 +77,11 @@ export default class Platform extends AABB {
             this.position.y - obsHeight,
             obsWidth,
             obsHeight,
-            this.vel.x
+            this.vel.x,
+            "./static/metal-spikes.png",
+            256,
+            64,
+            true
           );
           // newobj.position.x -= newobj.width;
         } else if (random < 0.5) {
@@ -88,11 +92,14 @@ export default class Platform extends AABB {
               (obsHeight +
                 Game.randomInRange(
                   game.player.height / 2,
-                  game.player.height + 100
+                  game.player.height + screen.height / 16
                 )),
             obsWidth,
             obsHeight,
-            this.vel.x
+            this.vel.x,
+            "./static/metal-spike-block.png",
+            256,
+            128
           );
           // newobj.position.x -= newobj.width;
         }
@@ -113,9 +120,9 @@ export default class Platform extends AABB {
 
     if (this.coordinates.length === 0 && this.instantiated && this.id !== 0) {
       //generates obstacles for instantiated platforms.
-      var min = this.left() + this.obstaclewidth + this.landingdistance;
-      var max = this.right() - (this.obstaclewidth + this.landingdistance);
-      this.objectDistance = game.player.width + 100 + this.obstaclewidth;
+      var min = this.left() + this.obstacleWidth + this.landingDistance;
+      var max = this.right() - (this.obstacleWidth + this.landingDistance);
+      this.objectDistance = game.player.width + 100 + this.obstacleWidth;
       this.coordinates = this.getCoords(min, max, this.objectDistance, []);
       this.coordinates = this.coordinates.sort();
       if (this.coordinates[0] - min > this.objectDistance) {
@@ -126,7 +133,7 @@ export default class Platform extends AABB {
           this.coordinates
         );
       }
-      this.placeObstacles(this.obstacleheight, this.obstaclewidth);
+      this.placeObstacles(this.obstacleHeight, this.obstacleWidth);
     }
   }
 

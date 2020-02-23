@@ -36,6 +36,11 @@ export default class Coin extends PowerUp {
     if (collisionbottom.val === true || collisiontop.val === true) {
       this.collect();
     }
+
+    if (this.right() < game.camX) {
+      var index = game.coins.indexOf(this);
+      game.coins.splice(index, 1);
+    }
   }
 
   draw() {

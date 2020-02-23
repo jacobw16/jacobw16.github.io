@@ -29,7 +29,7 @@ export default class Blade extends AABB {
   }
 
   update() {
-    super.move();
+    // super.move();
     this.vel.y += this.gravity;
     this.handleCollisions();
     this.position.y += this.vel.y;
@@ -55,7 +55,9 @@ export default class Blade extends AABB {
   handleCollisions() {
     var coll = detectCollision(this.bottomright(), this.parent);
     if (coll.val === true && coll.loc === "bottom") {
-      resolveCollision(this, this.parent, coll);
+      this.vel.y *= coll.intersection.t;
+      this.vel.y += 0.1;
+      this.position.y += this.vel.y;
       this.vel.y -= this.impulse;
     }
   }

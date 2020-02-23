@@ -10,22 +10,127 @@
       href="https://fonts.googleapis.com/css?family=Montserrat&display=swap"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css?family=Righteous&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       canvas {
         border: 0px;
         margin: 0px;
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
       }
       * {
         margin: 0px;
         padding: 0px;
         overflow: hidden;
       }
+      #gameOver,
+      #pausedMenu,
+      #mainMenu {
+        position: absolute;
+        visibility: hidden;
+        text-align: center;
+        z-index: 10;
+      }
+
+      h1 {
+        font-family: "Righteous";
+        color: white;
+        text-align: center;
+      }
+      h3 {
+        font-family: "Righteous";
+        color: white;
+        text-align: center;
+      }
+
+      #restartBtn,
+      #exitBtn,
+      #resumeBtn,
+      #helpBtn,
+      #playBtn {
+        border: 2px solid black;
+      }
+
+      #restartBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #resumeBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #helpBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #playBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #exitBtn:hover {
+        background-color: #ffffff9a;
+      }
+
+      #overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        background-color: rgba(0, 0, 0, 0.5);
+        visibility: hidden;
+      }
+
+      #highScoreAlert {
+        font-size: 100;
+        font-family: "Advent Pro";
+        margin-bottom: 0;
+        margin-top: 0;
+        visibility: hidden;
+      }
+      .title {
+        font-size: 256;
+        margin-bottom: 0;
+        margin-top: 0;
+      }
     </style>
   </head>
 
-  <body>
-    <canvas id="gamescreen"></canvas>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"></script>
-    <script src="main.js"></script>
+  <body id="body">
+    <section id="mainMenu">
+      <h1 class="title">JUMP</h1>
+      <h3 id="playBtn">Play</h3>
+      <h3 id="helpBtn">Help</h3>
+    </section>
+
+    <section id="pausedMenu">
+      <h1 class="title">PAUSED</h1>
+      <h3 id="resumeBtn">Resume</h3>
+      <h3 id="restartBtn">Restart</h3>
+      <h3 id="helpBtn">Help</h3>
+      <h3 id="exitBtn">Exit</h3>
+    </section>
+
+    <section id="gameOver">
+      <h1 class="title">Game Over</h1>
+      <h3 id="restartBtn">Click to Restart</h3>
+      <h3 id="exitBtn">Exit</h3>
+      <h1 id="highScoreAlert">NEW HIGHSCORE</h1>
+    </section>
+    <div id="overlay"></div>
+
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js"
+    ></script>
+
+    <div style="text-align: center">
+      <canvas id="gamescreen"></canvas>
+      <script type="text/javascript" src="./main.js"></script>
+    </div>
   </body>
 </html>

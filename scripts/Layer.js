@@ -79,15 +79,14 @@ export default class Layer {
     dwidth = this.width,
     dheight = this.height
   ) {
-    // console.log(image);
+    // console.table(image);
     game.ctx.drawImage(image, sx, sy, swidth, sheight, dx, dy, dwidth, dheight);
   }
 
   static createImage(src) {
-    if (src !== undefined) {
+    if (src !== undefined && src.constructor.name !== "Array") {
       var img = new Image();
       img.addEventListener("load", () => {});
-
       if (src === "./static/city_background_clean_long.png") {
         src = require("./static/city_background_clean_long.png");
       } else if (src === "./static/city_background_clean.png") {
@@ -110,9 +109,27 @@ export default class Layer {
         src = require("./static/gold_coin_round_blank_5.png");
       } else if (src === "./static/gold_coin_round_blank_6.png") {
         src = require("./static/gold_coin_round_blank_6.png");
+      } else if (src === "./static/metal-spikes.png") {
+        src = require("./static/metal-spikes.png");
+      } else if (src === "./static/metal-spike-block.png") {
+        src = require("./static/metal-spike-block.png");
+      } else if (src === "./static/orb_1.png") {
+        src = require("./static/orb_1.png");
+      } else if (src === "./static/orb_2.png") {
+        src = require("./static/orb_2.png");
+      } else if (src === "./static/orb_3.png") {
+        src = require("./static/orb_3.png");
+      } else if (src === "./static/orb_4.png") {
+        src = require("./static/orb_4.png");
+      } else if (src === "./static/orb_5.png") {
+        src = require("./static/orb_5.png");
+      } else if (src === "./static/orb_6.png") {
+        src = require("./static/orb_6.png");
+      } else if (src === "./static/potion1_3.png") {
+        src = require("./static/potion1_3.png");
       }
-
       img.src = src;
+
       return img;
     }
   }

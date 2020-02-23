@@ -1,8 +1,8 @@
 import AABB from "./AABB";
 import { game } from "./main";
 import { detectCollision } from "./collisions";
+import Sprite from "./Sprite";
 import Game from "./Game.js";
-import { thresholdedReLU } from "@tensorflow/tfjs-layers/dist/exports_layers";
 export class PowerUp extends AABB {
   constructor(spawnX, spawnY, width, height, xvel, parentobj) {
     super(spawnX, spawnY, width, height, xvel, 0);
@@ -17,12 +17,38 @@ export class PowerUp extends AABB {
     this.startTimer = false;
     this.timer = 0;
     this.duration = 5;
+    this.sprite = this.createSprite();
+  }
+
+  createSprite() {
+    return new Sprite(
+      1,
+      1,
+      [
+        "./static/orb_1.png",
+        "./static/orb_2.png",
+        "./static/orb_3.png",
+        "./static/orb_4.png",
+        "./static/orb_5.png",
+        "./static/orb_6.png"
+      ],
+      this.left(),
+      this.top(),
+      this.width,
+      this.height,
+      0,
+      0,
+      318,
+      318,
+      false
+    );
   }
 
   update() {
+    if (this.sprite !== undefined) this.sprite.drawSprite(true);
     this.handleCollisions();
     super.move();
-    super.draw();
+    // super.draw();
   }
 
   getPower() {
@@ -34,15 +60,14 @@ export class PowerUp extends AABB {
     var collisionleft = detectCollision(game.player.bottomleft(), this);
     if (collisionright.val === true || collisionleft.val === true) {
       this.activatePower();
-      this.startTimer = true;
     }
   }
 
   activatePower() {
     this.power();
-    game.screen.style.background = "rgba(0, 255, 0, 0.3)";
+    game.screen.style.background = "rgba(0,255,0,0.3)";
     game.player.currentPower = this.power;
-    console.log("start timer");
+    this.startTimer = true;
   }
 
   deactivatePower() {
@@ -52,11 +77,11 @@ export class PowerUp extends AABB {
       game.player.immune = false;
     } else if (this.power === this.halfSpeed) {
       game.player.gravity *= 2;
+      game.player.velocityMultiplier *= 2;
     }
+    this.startTimer = false;
+    game.screen.style.background = "rgba(32,32,32,0.3)";
     game.player.currentPower = undefined;
-    game.screen.style.background = "rgba(032,032,032,0.3)";
-    this.parent.powerup = null;
-    console.log("deadded");
   }
 
   reducedDistance() {
@@ -72,6 +97,7 @@ export class PowerUp extends AABB {
   halfSpeed() {
     if (game.player.currentPower !== this.halfSpeed) {
       game.player.gravity /= 2;
+      game.player.velocityMultiplier /= 2;
     }
     // player.vel.scale(0.5);
   }

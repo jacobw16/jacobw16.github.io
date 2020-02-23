@@ -1,12 +1,21 @@
-import { game } from "./main.js";
+import {
+  game
+} from "./main.js";
 import AABB from "./AABB.js";
-import { getNormal, drawLine } from "./Helpers";
+import {
+  getNormal,
+  drawLine
+} from "./Helpers";
 import Vector from "./Vector";
-import { detectCollision, resolveCollision } from "./collisions.js";
+import {
+  detectCollision,
+  resolveCollision
+} from "./collisions.js";
 import NeuralNet from "./NeuralNetwork";
 import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
 import Sprite from "./Sprite.js";
+import Platform from "./Platform";
 // const camX = -player.midpoint().x + screen.width / 2;
 
 export default class Player extends AABB {
@@ -32,13 +41,14 @@ export default class Player extends AABB {
     this.sprite;
     this.immune = false;
     this.currentPower;
-
+    this.velocityMultiplier = 1;
+    this.maxvelocity = 30;
+    this.velocitygrowthRate = 0.5;
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
   }
 
   draw() {
-    // super.draw();
     if (this.sprite === undefined) {
       this.sprite = this.createSprite();
     }
@@ -47,18 +57,38 @@ export default class Player extends AABB {
 
   update() {
     //increase landing distance and platform distance with speed.
-    this.initvel = Math.min(15, Math.max(5, Math.pow(this.initvel, 1.001)));
-    this.vel.x = this.initvel;
+
+    if (this.top() > game.screen.height) {
+      if (this.score > game.currenthighScore) {
+        game.showhighScoreAlert = true;
+      }
+
+      if (
+        game.currenthighScore === null ||
+        game.currenthighScore < this.score
+      ) {
+        localStorage.setItem("highScore", this.score);
+      }
+      game.setState("GAMEOVER");
+    }
+    if (this.vel.x < this.maxvelocity) {
+      this.vel.x += 0.01;
+      game.platformMinWidth += 0.25;
+      game.platformgap += 0.25;
+      Platform.obstaclewidth;
+    }
     this.fall();
     this.lastcollision = null;
     this.handleCollisions(game.surfacearray);
-    if (this.currentPower && this.currentPower.name === "halfSpeed") {
-      this.position.y += this.vel.y / 2;
-      this.position.x += this.vel.x / 2;
-    } else {
-      this.position.y += this.vel.y;
-      this.position.x += this.vel.x;
-    }
+    // if (this.currentPower && this.currentPower.name === "halfSpeed") {
+    //   this.position.y += this.vel.y / 2;
+    //   this.position.x += this.vel.x / 2;
+    // } else {
+    //   this.position.y += this.vel.y;
+    //   this.position.x += this.vel.x;
+    // }
+    this.position.y += this.vel.y * this.velocityMultiplier;
+    this.position.x += this.vel.x * this.velocityMultiplier;
     this.updateScore(game.deltatime);
     if (this.top() >= screen.height) {
       //  restartGame();
@@ -68,10 +98,27 @@ export default class Player extends AABB {
   fall() {
     this.vel.y += this.gravity;
   }
+
   jump() {
     if (this.collided) {
       this.vel.y -= this.jumpspeed;
       // this.collided = false;
+    }
+  }
+
+  crouch() {
+    if (!this.crouched) {
+      this.height /= 2;
+      this.position.y -= this.height / 2;
+      this.crouched = true;
+    }
+  }
+
+  uncrouch() {
+    if (this.crouched === true) {
+      this.height *= 2;
+      this.position.y -= this.height;
+      this.crouched = false;
     }
   }
 
@@ -112,7 +159,13 @@ export default class Player extends AABB {
           var collbottom = detectCollision(this.bottomright(), obstacle);
           var colltop = detectCollision(this.topright(), obstacle);
           if (collbottom.val === true && this.immune === false) {
-            resolveCollision(this, obstacle, collbottom);
+            if (obstacle.floorspike === true) {
+              this.resolveCollisionFloorspike(this, obstacle, collbottom);
+              var index = object.obstacles.indexOf(obstacle);
+              object.obstacles.splice(index, 1);
+            } else {
+              resolveCollision(this, obstacle, collbottom);
+            }
             // obstacle.colour = "blue";
             // this.collided = true;
             // if (coll.loc === "left side") {
@@ -121,7 +174,13 @@ export default class Player extends AABB {
             //   );
             // }
           } else if (colltop.val === true && this.immune === false) {
-            resolveCollision(this, obstacle, colltop);
+            if (obstacle.floorspike === true) {
+              this.resolveCollisionFloorspike(this, obstacle, colltop);
+              var index = object.obstacles.indexOf(obstacle);
+              object.obstacles.splice(index, 1);
+            } else {
+              resolveCollision(this, obstacle, colltop);
+            }
           }
         }
       }
@@ -131,6 +190,12 @@ export default class Player extends AABB {
       this.colour = "black";
       this.collided = false;
     }
+  }
+
+  resolveCollisionFloorspike(player, object, result) {
+    this.position.x += this.vel.x * result.intersection.t - 0.1;
+    this.vel.x /= 2;
+    // player.vel.x = 0;
   }
 
   nextPlatform() {
@@ -173,6 +238,7 @@ export default class Player extends AABB {
 
   onCollisionEnter(collision) {
     this.newFriction(collision);
+
     // if (this.called === undefined) {
     //   this.called = false;
     // }

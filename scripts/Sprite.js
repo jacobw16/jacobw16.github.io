@@ -82,30 +82,22 @@ export default class Sprite extends Layer {
   updateSprite(updaterate = 240) {
     // game.ctx.clearRect(game.camX, game.camY, screen.width, screen.height);
     var updaterateSeconds = (game.secondsPerFrame * updaterate) / 1000;
-
-    // if (this.timeElapsed >= updaterateSeconds) {
-    //   this.timeElapsed = this.timeElapsed % updaterateSeconds;
     if (this.spritesheet === true) {
-      if (this.waited >= this.updateRate) {
-        if (this.currentFrame % this.cols === 0) {
-          // flip the current value using bitwise XOR
-          this.rowSwitch = this.rowSwitch ^ 0b1;
-        }
-        if (this.rowSwitch === 0b0) {
-          // set the source Y value to 0 to take sprites from the first row of the spritesheet.
-          this.sy = 0;
-        } else if (this.rowSwitch === 0b1) {
-          // set the source Y value to 120 to take sprites from the second row of the spritesheet.
-          this.sy = 120;
-        }
-        this.currentFrame = ++this.currentFrame % this.cols;
-        this.sx = this.currentFrame * this.frameWidth;
-        this.dx = game.player.left();
-        this.dy = game.player.top();
-        this.waited = this.waited % this.updateRate;
-      } else {
-        this.waited += 1;
+      if (this.currentFrame % this.cols === 0) {
+        // flip the current value using bitwise XOR
+        this.rowSwitch = this.rowSwitch ^ 0b1;
       }
+      if (this.rowSwitch === 0b0) {
+        // set the source Y value to 0 to take sprites from the first row of the spritesheet.
+        this.sy = 0;
+      } else if (this.rowSwitch === 0b1) {
+        // set the source Y value to 120 to take sprites from the second row of the spritesheet.
+        this.sy = 120;
+      }
+      this.currentFrame = ++this.currentFrame % this.cols;
+      this.sx = this.currentFrame * this.frameWidth;
+      this.dx = game.player.left();
+      this.dy = game.player.top();
     } else if (this.src.constructor.name === "Array") {
       this.imagePointer = ++this.imagePointer % this.src.length;
     }
@@ -114,5 +106,5 @@ export default class Sprite extends Layer {
 // } else {
 //   this.timeElapsed += game.deltatime;
 // }
-//   }
+//
 // }

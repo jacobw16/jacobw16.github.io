@@ -11,15 +11,41 @@ import {
   forcepos,
   resolveCollision
 } from "./collisions.js";
-import { createPopulation, getFurthestPlayer, managePopulation } from "./ga.js";
+import {
+  createPopulation,
+  getFurthestPlayer,
+  managePopulation
+} from "./ga.js";
 import _ from "lodash";
 import Coin from "./coin.js";
+import {
+  restartGame
+} from "./main.js";
+import {
+  drawLine
+} from "./Helpers";
 
 export default class Game {
-  constructor() {
+  constructor(state = "RUNNING") {
     this.heightratio = 9;
     this.widthratio = 16;
     this.screen = document.getElementById("gamescreen");
+    this.menuOverlay = document.getElementById("overlay");
+    this.gameOverMenu = {
+      menu: document.getElementById("gameOver")
+    };
+    this.mainMenu = {
+      menu: document.getElementById("mainMenu")
+    };
+    this.pausedMenu = {
+      menu: document.getElementById("pausedMenu")
+    };
+    this.resumeBtn = document.getElementById("resumeBtn");
+    this.helpBtn = document.getElementById("helpBtn");
+    this.playBtn = document.getElementById("playBtn");
+    this.restartBtn = document.getElementById("restartBtn");
+    this.exitBtn = document.getElementById("exitBtn");
+
     this.ctx = this.screen.getContext("2d");
     this.screen.width =
       ((window.innerWidth + window.innerHeight) /
@@ -32,7 +58,12 @@ export default class Game {
     this.screen.style.background = "rgba(032,032,032,0.3)";
     this.coins = [];
     this.surfacearray = []; //this.initPlatforms();
+    this.powerups = [];
+    this.state = state;
     this.player;
+    this.currenthighScore = localStorage.getItem("highScore");
+    this.showhighScoreAlert;
+    this.highScoreAlert = document.getElementById("highScoreAlert");
     this.popsize = 100;
     this.savedEnemies = [];
     this.startTime = new Date();
@@ -47,7 +78,9 @@ export default class Game {
     this.camY = 0;
     this.secondsOfHistory = 2;
     this.historyLength = this.secondsOfHistory * this.fps; // number of frames held in the history stack
-    this.playerRewindDuration = 2; // how long the player is allowed to rewind in seconds.
+    this.maxRewindDuration = 2;
+    this.playerRewindDuration = this.maxRewindDuration; // how long the player is allowed to rewind in seconds.
+    this.rewindregenMultiplier = 0.25; // how qucikly the player regens their rewind time.
     this.gamehistory = new History(this.historyLength);
     this.gamespeed = 1;
     this.platfriction = 1;
@@ -59,37 +92,51 @@ export default class Game {
     this.addEventListeners();
     this.initialisedObjects = false;
     this.powerupDuration = 5;
-    this.powerupTimer = 0;
+    this.platformMinWidth = this.screen.width / 2;
+    this.platformMaxWidth = 2 * this.screen.width;
   }
 
   update() {
-    this.t2 = Date.now();
-    this.deltatime = Math.abs(this.t2 - this.t1) / 1000;
+    if (this.state === "RUNNING") {
+      this.t2 = Date.now();
+      this.deltatime = Math.abs(this.t2 - this.t1) / 1000;
+      if (this.initialisedObjects === false) {
+        this.initialiseObjects();
+        this.player = new Player();
+        this.initialisedObjects = true;
+      }
 
-    if (this.initialisedObjects === false) {
-      this.initialiseObjects();
-      this.player = new Player();
-      this.initialisedObjects = true;
-    }
+      // if (this.deltatime > 0.15) {
+      //   this.deltatime = 0.15;
+      // }
 
-    // if (this.deltatime > 0.15) {
-    //   this.deltatime = 0.15;
-    // }
+      if (this.deltatime >= this.secondsPerFrame && this.paused !== true) {
+        this.t1 = this.t2 - (this.deltatime % this.secondsPerFrame);
+        if (this.rewind) this.rewindGame();
+        this.manageCanvas(this.player);
+        this.drawObjects();
+        this.updateObjects();
+        this.drawScore();
+        // managePopulation();
+        // furthestplayer = getFurthestPlayer();
 
-    if (this.deltatime >= this.secondsPerFrame && this.paused !== true) {
-      this.t1 = this.t2 - (this.deltatime % this.secondsPerFrame);
-      if (this.rewind) this.rewindGame();
-      this.manageCanvas(this.player);
-      this.drawObjects();
-      this.updateObjects();
-      this.drawScore();
-      // managePopulation();
-      // furthestplayer = getFurthestPlayer();
-
-      //using Lodash library's clone deep function to create a copy of the player object for use later.
-      if (this.rewind === false) this.saveCopies();
-      //   distance = 0;
-      //    distance += calcDistance(deltatime);
+        if (this.rewind === false) this.saveCopies();
+        //   distance = 0;
+        //    distance += calcDistance(deltatime);
+      }
+    } else if (this.state === "PAUSED") {
+      //display pause menu.
+      this.showMenu(this.pausedMenu.menu);
+    } else if (this.state === "GAMEOVER") {
+      //display game over menu.
+      if (this.showhighScoreAlert) {
+        this.highScoreAlert.innerHTML = `NEW HIGHSCORE: ${Math.trunc(this.player.score)}`;
+        this.highScoreAlert.style.visibility = "visible";
+      }
+      this.showMenu(this.gameOverMenu.menu);
+    } else if (this.state === "MAINMENU") {
+      //display main menu.
+      this.showMenu(this.mainMenu.menu);
     }
   }
 
@@ -102,7 +149,17 @@ export default class Game {
   }
 
   initLayers() {
-    this.menu = new Layer("./static/game_menu.png");
+    this.menu = new Layer(
+      "./static/game_menu.png",
+      0,
+      0,
+      this.camX + this.screen.width / 2 - 1050,
+      screen.height / 2 - 750,
+      0,
+      0,
+      2100,
+      1500
+    );
     this.background = new Layer(
       "./static/city_background_clean_long.png",
       0,
@@ -120,6 +177,36 @@ export default class Game {
       0.5,
       400
     );
+  }
+
+  setState(state) {
+    this.state = state;
+  }
+
+  hideMenu(menu) {
+    menu.style.visibility = "hidden";
+  }
+
+  showMenu(menu) {
+    this.menuOverlay.style.visibility = "visible";
+    if (this.state === "GAMEOVER") {
+      this.menuOverlay.style.background = "rgba(50,0,0,0.5)";
+    } else {
+      this.menuOverlay.style.background = "rgba(32,32,32,0.5)";
+    }
+    // drawLine(
+    //   new Vector(this.camX + this.screen.width / 2, 0),
+    //   new Vector(this.camX + this.screen.width / 2, screen.height),
+    //   "white"
+    // );
+    // drawLine(
+    //   new Vector(this.camX, this.screen.height / 2),
+    //   new Vector(this.camX + this.screen.width, this.screen.height / 2),
+    //   "white"
+    // );
+    menu.style.top = this.screen.height / 2 - menu.offsetHeight / 2 + "px";
+    menu.style.left = window.innerWidth / 2 - menu.offsetWidth / 2 + "px";
+    menu.style.visibility = "visible";
   }
 
   initialiseObjects() {
@@ -161,7 +248,7 @@ export default class Game {
 
     // player regens rewind time when they're not in the process of rewinding time
     if (this.playerRewindDuration < 2 && this.rewind === false) {
-      this.playerRewindDuration += this.deltatime;
+      this.playerRewindDuration += this.deltatime * this.rewindregenMultiplier;
     }
 
     for (var coin of this.coins) {
@@ -173,11 +260,26 @@ export default class Game {
   //     this = new Game();
   //   }
 
+  updatePowerups() {
+    for (var powerup of this.powerups) {
+      powerup.update();
+      if (powerup.startTimer) {
+        powerup.timer += this.deltatime;
+      }
+
+      if (powerup.timer > powerup.duration) {
+        powerup.deactivatePower();
+        var index = this.powerups.indexOf(powerup);
+        this.powerups.splice(index, 1);
+      }
+    }
+  }
+
   drawScore() {
     this.ctx.font = "48px Advent Pro";
     this.ctx.textAlign = "center";
     this.ctx.fillText(
-      `- ${Math.trunc(Math.pow(this.player.score, 1.01))} -`,
+      `- ${Math.trunc(Math.pow(this.player.score, 1.01))}m -`,
       this.screen.width / 2 + this.camX,
       this.screen.height / 12
     );
@@ -195,6 +297,7 @@ export default class Game {
     this.background2.draw();
     this.background.draw();
     this.drawGameObjects();
+    this.drawRewindbar();
     this.player.draw();
   }
 
@@ -202,6 +305,7 @@ export default class Game {
     this.background2.move();
     this.background.move();
     this.updateGameObjects();
+    this.updatePowerups();
     this.player.update();
     // console.log(JSON.stringify(this.surfacearray));
     // for (var item of population) {
@@ -210,15 +314,14 @@ export default class Game {
   }
 
   saveCopies() {
-    var playercopy = _.cloneDeep(this.player);
-    var surfacearraycopy = _.cloneDeep(this.surfacearray);
-    var coinsarraycopy = _.cloneDeep(this.coins);
-    var screencolor = this.screen.style.background;
+    //using Lodash library's clone deep function to create a copy of the player object for use later.
+
     this.gamehistory.add([
-      playercopy,
-      surfacearraycopy,
-      coinsarraycopy,
-      screencolor
+      _.cloneDeep(this.player),
+      _.cloneDeep(this.surfacearray),
+      _.cloneDeep(this.coins),
+      this.screen.style.background,
+      _.cloneDeep(this.powerups)
     ]);
   }
 
@@ -231,6 +334,7 @@ export default class Game {
       this.surfacearray = this.pop[1];
       this.coins = this.pop[2];
       this.screen.style.background = this.pop[3];
+      this.powerups = this.pop[4];
       this.playerRewindDuration -= this.secondsPerFrame;
       // this.player.currentPower = playercurrentPower;
     } else {
@@ -238,9 +342,53 @@ export default class Game {
     }
   }
 
+  drawRewindbar() {
+    var ratio = this.playerRewindDuration / this.maxRewindDuration;
+    var width = (ratio * this.screen.width) / 12;
+    this.ctx.fillStyle = "rgb(0,255,125)";
+    this.ctx.fillRect(
+      this.screen.width / 2 - this.screen.width / 24 + this.camX,
+      screen.height / 9.5,
+      width,
+      this.screen.height / 64
+    );
+    this.ctx.strokeStyle = "black";
+    this.ctx.strokeRect(
+      this.screen.width / 2 - this.screen.width / 24 + this.camX,
+      screen.height / 9.5,
+      this.screen.width / 12,
+      this.screen.height / 64
+    );
+    this.ctx.fillStyle = "black";
+  }
+
   addEventListeners() {
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      restartGame();
+      this.hideMenu(this.gameOverMenu.menu);
+      this.hideMenu(this.pausedMenu.menu);
+      this.hideMenu(this.menuOverlay);
+    });
+
+    this.resumeBtn.addEventListener("click", ev => {
+      this.unpauseGame();
+    });
+
+    this.playBtn.addEventListener("click", ev => {
+      this.hideMenu(this.mainMenu.menu);
+      this.hideMenu(this.menuOverlay);
+      this.setState("RUNNING");
+    });
+
+    this.exitBtn.addEventListener("click", ev => {
+      this.hideMenu(this.pausedMenu.menu);
+      this.hideMenu(this.gameOverMenu.menu);
+
+      restartGame("MAINMENU");
+    });
+
     window.addEventListener("keydown", ev => {
-      if (ev.which === 32) {
+      if (ev.code === "Space") {
         this.player.jump();
         this.player.collided = false;
       }
@@ -251,18 +399,39 @@ export default class Game {
       if (ev.key === "Escape" || ev.key === "Esc") {
         this.pauseGame();
       }
+
+      if (ev.key === "Control") {
+        this.player.crouch();
+      }
     });
 
     window.addEventListener("keyup", ev => {
       if (ev.key === "R" || ev.key === "r") {
         this.rewind = false;
       }
+
+      if (ev.key === "Control") {
+        this.player.uncrouch();
+      }
     });
   }
 
   pauseGame() {
-    this.paused = this.paused === true ? false : true;
-    this.menu.draw();
+    if (this.state === "RUNNING") {
+      this.setState("PAUSED");
+      this.savedDeltatime = this.deltatime;
+    } else if (this.state === "PAUSED") {
+      this.hideMenu(this.pausedMenu.menu);
+      this.hideMenu(this.menuOverlay);
+      this.setState("RUNNING");
+      this.deltatime = this.savedDeltatime;
+    }
+  }
+  unpauseGame() {
+    this.deltatime = this.savedDeltatime;
+    this.hideMenu(this.pausedMenu.menu);
+    this.hideMenu(this.menuOverlay);
+    this.setState("RUNNING");
   }
 
   drawGameObjects() {

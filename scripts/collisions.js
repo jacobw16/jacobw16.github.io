@@ -142,10 +142,21 @@ export function resolveCollision(player, object, result) {
     player.vel.y = 0;
   }
 
-  if (result.loc === "left side") {
+  if (result.loc === "left side" && object.floorspike != false) {
+    console.log(result.intersection.t);
     player.vel.x *= result.intersection.t;
     player.vel.x -= 0.1;
     player.position.x += player.vel.x;
     player.vel.x = 0;
+  }
+
+  if (object.floorspike !== undefined && object.floorspike === false) {
+    if (result.loc === "left side") {
+      player.position.x += player.vel.x * result.intersection.t - 0.1;
+      player.vel.x /= 2;
+    }
+    if (result.loc === "bottom") {
+      player.vel.x /= 2;
+    }
   }
 }

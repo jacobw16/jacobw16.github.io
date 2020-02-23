@@ -3,37 +3,62 @@ import Sprite from "./Sprite.js";
 import Blade from "./blade.js";
 import { PowerUp } from "./powerup.js";
 import { game } from "./main.js";
-import { thresholdedReLU } from "@tensorflow/tfjs-layers/dist/exports_layers";
+import {
+  thresholdedReLU,
+  Layer
+} from "@tensorflow/tfjs-layers/dist/exports_layers";
 
 export default class Obstacle extends AABB {
-  constructor(id, x, y, width, height, xvel) {
+  constructor(
+    id,
+    x,
+    y,
+    width,
+    height,
+    xvel,
+    src,
+    imageWidth,
+    imageHeight,
+    floorspike = false
+  ) {
     super(x, y, width, height, xvel, 0);
     this.id = id;
     this.instantiated = false;
-    if (Math.random() < 0.5) {
-      this.blade = this.createBlade();
-      this.powerup = this.createPowerUp();
+    this.sprite = this.createSprite(src, imageWidth, imageHeight);
+    this.floorspike = floorspike;
+    if (Math.random() < 0.5 && !this.floorspike) {
+      // this.blade = this.createBlade();
+      this.createPowerUp();
     } else {
       this.blade = null;
-      this.powerup = null;
     }
   }
 
   draw() {
-    super.draw();
+    this.sprite.drawSprite(false);
+    // super.draw();
   }
 
   move() {
     // if (this.position.x === game.surfacearray[0].coordinates[0]))
-    if (this.powerup !== null) {
-      this.powerup.update();
-      if (this.powerup.startTimer) this.powerup.timer += game.deltatime;
-      if (this.powerup.timer > this.powerup.duration) {
-        this.powerup.deactivatePower();
-      }
-    }
-    if (this.blade !== null) this.blade.update();
+    // if (this.blade !== null) this.blade.update();
     super.move();
+  }
+  createSprite(src, imageWidth, imageHeight) {
+    return new Sprite(
+      1,
+      1,
+      src,
+      this.left(),
+      this.top(),
+      this.width,
+      this.height,
+      0,
+      0,
+      imageWidth,
+      imageHeight,
+      false
+    );
   }
 
   createBlade() {
@@ -50,7 +75,7 @@ export default class Obstacle extends AABB {
   }
 
   createPowerUp() {
-    return new PowerUp(
+    var newpowerup = new PowerUp(
       this.midpoint().x - 25,
       this.position.y - this.height,
       50,
@@ -58,5 +83,6 @@ export default class Obstacle extends AABB {
       this.vel.x,
       this
     );
+    game.powerups.push(newpowerup);
   }
 }
