@@ -21,15 +21,14 @@ export default class Blade extends AABB {
   }
 
   draw() {
-    // super.draw();
-    // this.drawSprite();
+    //draws the blade sprite and assigns its x and y values to the current blade instance.
     this.sprite.drawSprite(false);
     this.sprite.dx = this.left();
     this.sprite.dy = this.top();
   }
 
   update() {
-    // super.move();
+    //called every frame, causes the blade to shoot up and down from its parent obstacle.
     this.vel.y += this.gravity;
     this.handleCollisions();
     this.position.y += this.vel.y;
@@ -55,9 +54,11 @@ export default class Blade extends AABB {
   handleCollisions() {
     var coll = detectCollision(this.bottomright(), this.parent);
     if (coll.val === true && coll.loc === "bottom") {
+      //move the player to the point at which it collides with the obstacle.
       this.vel.y *= coll.intersection.t;
       this.vel.y += 0.1;
       this.position.y += this.vel.y;
+      //shoot the obstacle away from the obstacle parent.
       this.vel.y -= this.impulse;
     }
   }

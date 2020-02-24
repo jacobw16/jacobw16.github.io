@@ -31,20 +31,22 @@ export default class Coin extends PowerUp {
   }
 
   update() {
+    // check collisions.
     var collisionbottom = detectCollision(game.player.bottomright(), this);
     var collisiontop = detectCollision(game.player.topright(), this);
     if (collisionbottom.val === true || collisiontop.val === true) {
+      //if player landed on a coin, add its value to the score and delete the coin.
       this.collect();
     }
 
     if (this.right() < game.camX) {
+      // delete the coin if it goes off screen.
       var index = game.coins.indexOf(this);
       game.coins.splice(index, 1);
     }
   }
 
   draw() {
-    // super.draw();
     this.sprite.drawSprite(true);
   }
 
