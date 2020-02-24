@@ -124,8 +124,8 @@ export function detectCollision(corner, platform) {
   return result;
 }
 
-export function resolveCollision(player, object, result) {
-  if (result.loc === "top") {
+export function resolveCollision(player, object, result, corner = "bottom") {
+  if (result.loc === "top" && corner === "bottom") {
     player.vel.y *= result.intersection.t;
     player.vel.y -= 0.1;
     player.position.y += player.vel.y;
@@ -142,8 +142,7 @@ export function resolveCollision(player, object, result) {
     player.vel.y = 0;
   }
 
-  if (result.loc === "left side" && object.floorspike != false) {
-    console.log(result.intersection.t);
+  if (result.loc === "left side" && object.floorspike !== false) {
     player.vel.x *= result.intersection.t;
     player.vel.x -= 0.1;
     player.position.x += player.vel.x;
@@ -155,6 +154,7 @@ export function resolveCollision(player, object, result) {
       player.position.x += player.vel.x * result.intersection.t - 0.1;
       player.vel.x /= 2;
     }
+
     if (result.loc === "bottom") {
       player.vel.x /= 2;
     }

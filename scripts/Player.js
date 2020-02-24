@@ -226,7 +226,7 @@ export default class Player extends AABB {
               var index = object.obstacles.indexOf(obstacle);
               object.obstacles.splice(index, 1);
             } else {
-              resolveCollision(this, obstacle, colltop);
+              resolveCollision(this, obstacle, colltop, "top");
             }
           }
         }
