@@ -11,7 +11,7 @@ import Platform from "./Platform";
 // const camX = -player.midpoint().x + screen.width / 2;
 
 export default class Player extends AABB {
-  constructor() {
+  constructor(initvel = 5, maxvel = 30) {
     super(
       game.screen.width / 6 - game.screen.width / 12,
       game.surfacearray[0].position.y - (game.screen.height / 16 + 1) - 100,
@@ -21,7 +21,7 @@ export default class Player extends AABB {
       0
     );
     // this.fallspeed = 9 * gamespeed * deltatime;#
-    this.initvel = 5;
+    this.initvel = initvel;
     this.jumpspeed = 0.04 * game.screen.height * game.gamespeed;
     this.gravity = 0.0012 * game.screen.height * game.gamespeed;
     this.nextPlatformvar;
@@ -35,9 +35,13 @@ export default class Player extends AABB {
     this.currentPower;
     this.velocityMultipliery = 1;
     this.velocityMultiplierx = 1;
-
-    this.maxvelocity = 30;
-    this.velocitygrowthRate = 0.5;
+    this.frictionMultiplier = 1;
+    this.maxvelocity = maxvel;
+    this.velocitygrowthRate = 0.01;
+    game.platformgapMax =
+      game.platformgap +
+      ((this.maxvelocity - this.initvel) / this.velocitygrowthRate) *
+        game.platformgapgrowthRate;
     // this.prevstate = this;
     // this.lastPlatformIndex = 0;
   }
@@ -50,64 +54,74 @@ export default class Player extends AABB {
   }
 
   setScores() {
-    this.score = Math.trunc(this.score);
-    if (game.scores === "undefined" || game.scores === null) {
-      var currentScoreArray = [];
-    }
-    if (game.scores !== "undefined")
-      var currentScoreArray = JSON.parse(game.scores);
-
-    if (currentScoreArray === null) currentScoreArray = [];
-    var nameInScores = false;
-    if (
-      game.currenthighScore === null ||
-      this.score > game.currenthighScore.score
-    ) {
-      game.showhighScoreAlert = true;
-    }
-
-    if (
-      game.currenthighScore === null ||
-      game.currenthighScore.score < this.score
-    ) {
-      var saveString = JSON.stringify({
-        score: this.score,
-        username: this.name
-      });
-      localStorage.setItem("highScore", saveString);
-    }
-    for (var i = 0; i < currentScoreArray.length; i++) {
-      if (
-        currentScoreArray[i].username === this.name &&
-        currentScoreArray[i].score < this.score
-      ) {
-        currentScoreArray[i].score = this.score;
-      } else if (currentScoreArray[i].username === this.name) {
-        nameInScores = true;
+    if (this.name !== "") {
+      this.score = Math.trunc(this.score);
+      if (game.scores === "undefined" || game.scores === null) {
+        var currentScoreArray = [];
       }
-    }
-    if (nameInScores === false) {
-      var saveString = {
-        score: this.score,
-        username: this.name
-      };
-      currentScoreArray.push(saveString);
-      localStorage.setItem("Scores", JSON.stringify(currentScoreArray));
+      if (game.scores !== "undefined")
+        var currentScoreArray = JSON.parse(game.scores);
+
+      if (currentScoreArray === null) currentScoreArray = [];
+      var nameInScores = false;
+      if (
+        game.currenthighScore === null ||
+        this.score > game.currenthighScore.score
+      ) {
+        game.showhighScoreAlert = true;
+      }
+
+      if (
+        game.currenthighScore === null ||
+        game.currenthighScore.score < this.score
+      ) {
+        var saveString = JSON.stringify({
+          score: this.score,
+          username: this.name
+        });
+        localStorage.setItem("highScore", saveString);
+      }
+      for (var i = 0; i < currentScoreArray.length; i++) {
+        if (
+          currentScoreArray[i].username === this.name &&
+          currentScoreArray[i].score < this.score
+        ) {
+          nameInScores = true;
+          currentScoreArray[i].score = this.score;
+        } else if (currentScoreArray[i].username === this.name) {
+          nameInScores = true;
+        }
+      }
+
+      if (nameInScores === false) {
+        var saveString = {
+          score: this.score,
+          username: this.name
+        };
+        currentScoreArray.push(saveString);
+        localStorage.setItem("Scores", JSON.stringify(currentScoreArray));
+      } else {
+        localStorage.setItem("Scores", JSON.stringify(currentScoreArray));
+      }
     }
     game.setState("GAMEOVER");
   }
 
   update() {
-    //increase landing distance and platform distance with speed.
+    //set the players name to username entered in login screen.
     if (!this.name) this.name = game.playerName;
+    //manage scoreboard when player dies.
     if (this.top() > game.screen.height) {
       this.setScores();
     }
+
+    //increase landing distance and platform distance with speed.
     if (this.vel.x < this.maxvelocity) {
-      this.vel.x += 0.01;
-      game.platformMinWidth += 0.25;
-      game.platformgap += 0.25;
-      Platform.obstaclewidth;
+      this.vel.x += this.velocitygrowthRate;
+      if (game.platformgap < game.platformgapMax) {
+        game.platformMinWidth += game.platformgapgrowthRate;
+        game.platformgap += game.platformgapgrowthRate;
+      }
     }
     this.fall();
     this.lastcollision = null;
@@ -120,7 +134,8 @@ export default class Player extends AABB {
     //   this.position.x += this.vel.x;
     // }
     this.position.y += this.vel.y * this.velocityMultipliery;
-    this.position.x += this.vel.x * this.velocityMultiplierx;
+    this.position.x +=
+      this.vel.x * this.velocityMultiplierx * this.frictionMultiplier;
     this.updateScore(game.deltatime);
     if (this.top() >= screen.height) {
       //  restartGame();
@@ -264,7 +279,8 @@ export default class Player extends AABB {
 
   newFriction(collision) {
     if (collision.object.constructor.name === "Platform") {
-      this.velocityMultiplierx = collision.object.friction;
+      // this.velocityMultiplierx = collision.object.friction;
+      this.frictionMultiplier = collision.object.friction;
     }
   }
 

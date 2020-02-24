@@ -37,11 +37,7 @@ export default class Game {
     this.pausedMenu = {
       menu: document.getElementById("pausedMenu")
     };
-    this.resumeBtn = document.getElementById("resumeBtn");
-    this.helpBtn = document.getElementById("helpBtn");
-    this.playBtn = document.getElementById("playBtn");
-    this.restartBtn = document.getElementById("restartBtn");
-    this.exitBtn = document.getElementById("exitBtn");
+
     this.loginPage = {
       menu: document.getElementById("loginPage"),
       form: document.getElementById("loginForm"),
@@ -99,6 +95,8 @@ export default class Game {
     this.powerupDuration = 5;
     this.platformMinWidth = this.screen.width / 2;
     this.platformMaxWidth = 2 * this.screen.width;
+    this.platformgapgrowthRate = 0.25;
+    this.platformgapMax;
   }
 
   update() {
@@ -135,11 +133,11 @@ export default class Game {
     } else if (this.state === "LOGIN") {
       this.showMenu(this.loginPage.menu);
     } else if (this.state === "GAMEOVER") {
-      //display game over menu.
+      // display game over menu.
       if (this.showhighScoreAlert) {
         this.highScoreAlert.innerHTML = `NEW HIGHSCORE: ${
           this.player.name
-        }, ${Math.trunc(this.player.score)}`;
+        }, ${Math.trunc(this.player.score)}m`;
         this.highScoreAlert.style.visibility = "visible";
       }
       this.showMenu(this.gameOverMenu.menu);
@@ -193,6 +191,10 @@ export default class Game {
   }
 
   hideMenu(menu) {
+    if (menu === this.gameOverMenu.menu) {
+      this.highScoreAlert.style.visibility = "hidden";
+    }
+
     this.menuOverlay.style.visibility = "hidden";
     menu.style.visibility = "hidden";
   }
@@ -204,16 +206,6 @@ export default class Game {
     } else {
       this.menuOverlay.style.background = "rgba(32,32,32,0.5)";
     }
-    // drawLine(
-    //   new Vector(this.camX + this.screen.width / 2, 0),
-    //   new Vector(this.camX + this.screen.width / 2, screen.height),
-    //   "white"
-    // );
-    // drawLine(
-    //   new Vector(this.camX, this.screen.height / 2),
-    //   new Vector(this.camX + this.screen.width, this.screen.height / 2),
-    //   "white"
-    // );
     menu.style.top = this.screen.height / 2 - menu.offsetHeight / 2 + "px";
     menu.style.left = window.innerWidth / 2 - menu.offsetWidth / 2 + "px";
     menu.style.visibility = "visible";
@@ -237,7 +229,7 @@ export default class Game {
         this.surfacearray.push(
           new Platform(object.id + 1, object.right() + this.platformgap)
         );
-        if (Math.random() < 1) {
+        if (Math.random() < 0.5) {
           this.coins.push(
             new Coin(
               object.right() + (this.platformgap / 2 - 25),
@@ -374,62 +366,73 @@ export default class Game {
   }
 
   addEventListeners() {
-    document.getElementById("restartBtn").addEventListener("click", () => {
-      this.hideMenu(this.gameOverMenu.menu);
-      this.hideMenu(this.pausedMenu.menu);
-      restartGame();
-    });
-    this.loginPage.form.addEventListener("submit", ev => {
-      ev.preventDefault();
-      this.playerName = this.loginPage.username.value;
-      this.loginPage.username.value = "";
-      this.hideMenu(this.loginPage.menu);
-      this.setState("RUNNING");
-    });
+    document.body.addEventListener("click", ev => {
+      if (ev.target.id === "restartBtn") {
+        this.hideMenu(this.gameOverMenu.menu);
+        this.hideMenu(this.pausedMenu.menu);
+        restartGame("LOGIN");
+      }
 
-    this.resumeBtn.addEventListener("click", ev => {
-      this.unpauseGame();
-    });
+      if (ev.target.id === "playBtn") {
+        this.hideMenu(this.mainMenu.menu);
+        this.setState("LOGIN");
+      }
 
-    this.playBtn.addEventListener("click", ev => {
-      this.hideMenu(this.mainMenu.menu);
-      this.setState("LOGIN");
-    });
+      if (ev.target.id === "resumeBtn") {
+        this.unpauseGame();
+      }
 
-    this.exitBtn.addEventListener("click", ev => {
-      this.hideMenu(this.pausedMenu.menu);
-      this.hideMenu(this.gameOverMenu.menu);
-      restartGame("MAINMENU");
-    });
+      if (ev.target.id === "helpBtn") {
+        this.setState("HELPMENU");
+        this.hideMenu(this.mainMenu.menu);
+        this.showMenu(this.helpPage);
+      }
 
-    this.helpBtn.addEventListener("click", () => {
-      this.setState("HELPMENU");
-      this.hideMenu(this.mainMenu.menu);
-      this.showMenu(this.helpPage);
-    });
+      if (ev.target.id === "exitBtn") {
+        this.hideMenu(this.pausedMenu.menu);
+        this.hideMenu(this.gameOverMenu.menu);
+        restartGame("MAINMENU");
+      }
 
-    document.getElementById("backBtn").addEventListener("click", () => {
-      this.setState("MAINMENU");
-      this.hideMenu(this.scoresPage);
+      if (ev.target.id === "helpProceed") {
+        this.hideMenu(this.helpPage);
+        this.setState("MAINMENU");
+      }
+
+      if (ev.target.id === "backBtn") {
+        this.setState("MAINMENU");
+        this.hideMenu(this.scoresPage);
+      }
     });
 
     document.getElementById("scoresBtn").addEventListener("click", () => {
       //load scores into paragarph element.
+      this.scores = localStorage.getItem("Scores");
       var para = document.getElementById("scores");
-      for (var scoreObj of JSON.parse(this.scores)) {
-        var append = `User: ${scoreObj.username}, Score: ${scoreObj.score} \n`;
-        para.textContent += append;
-        para.appendChild(document.createElement("br"));
+      if (this.scores !== null) {
+        para.textContent = "";
+        var scores = JSON.parse(this.scores);
+        scores.sort((a, b) => (a.score < b.score ? 1 : -1));
+        for (var scoreObj of scores) {
+          var append = `#${scores.indexOf(scoreObj) + 1} User: ${
+            scoreObj.username
+          }, Score: ${scoreObj.score} \n`;
+          para.textContent += append;
+          para.appendChild(document.createElement("br"));
+        }
       }
-
       this.setState("SCORESMENU");
       this.hideMenu(this.mainMenu.menu);
       this.showMenu(this.scoresPage);
     });
 
-    document.getElementById("helpProceed").addEventListener("click", () => {
-      this.hideMenu(this.helpPage);
-      this.setState("MAINMENU");
+    this.loginPage.form.addEventListener("submit", ev => {
+      ev.preventDefault();
+      console.log(this.loginPage.username.value);
+      this.playerName = this.loginPage.username.value;
+      // this.loginPage.username.value = "";
+      this.hideMenu(this.loginPage.menu);
+      this.setState("RUNNING");
     });
 
     window.addEventListener("keydown", ev => {

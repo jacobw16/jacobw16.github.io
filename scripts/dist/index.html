@@ -131,18 +131,25 @@
   </head>
 
   <body id="body">
-    <section id="mainMenu">
-      <h1 class="title">JUMP</h1>
-      <h3 id="playBtn">Play</h3>
-      <h3 id="helpBtn">Help</h3>
-      <h3 id="scoresBtn">Scores</h3>
-    </section>
-
     <section id="pausedMenu">
       <h1 class="title">PAUSED</h1>
       <h3 id="resumeBtn">Resume</h3>
       <h3 id="restartBtn">Restart</h3>
       <h3 id="exitBtn">Exit</h3>
+    </section>
+
+    <section id="gameOver">
+      <h1 class="title">Game Over</h1>
+      <h3 id="restartBtn">Click to Restart</h3>
+      <h3 id="exitBtn">Exit</h3>
+      <h1 id="highScoreAlert">NEW HIGHSCORE</h1>
+    </section>
+
+    <section id="mainMenu">
+      <h1 class="title">JUMP</h1>
+      <h3 id="playBtn">Play</h3>
+      <h3 id="helpBtn">Help</h3>
+      <h3 id="scoresBtn">Scores</h3>
     </section>
 
     <section id="loginPage">
@@ -151,13 +158,6 @@
         <input type="text" id="username" name="username"><br><br>
         <button type="submit" id="submitBtn">ENTER</button>
       </form>
-    </section>
-
-    <section id="gameOver">
-      <h1 class="title">Game Over</h1>
-      <h3 id="restartBtn">Click to Restart</h3>
-      <h3 id="exitBtn">Exit</h3>
-      <h1 id="highScoreAlert">NEW HIGHSCORE</h1>
     </section>
 
     <section id="helpPage">
@@ -173,7 +173,8 @@
         The game gets faster over time and hitting obstacles will slow you to
         your disadvantage. Green Orbs contain powerups including 1/2 speed,
         reduced distance, rewind time refill and obstacle immunity. Coins can be
-        collected on the way to boost your score.
+        collected on the way to boost your score. Platforms also get further
+        apart as the game progresses.
       </p>
 
       <h3 id="helpProceed">Proceed</h3>

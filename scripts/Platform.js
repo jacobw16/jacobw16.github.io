@@ -37,8 +37,9 @@ export default class Platform extends AABB {
   }
 
   getFriction() {
+    var frictionvalues = [1];
     // var frictionvalues = [0.8, 0.9, 0.65, 0.4];
-    var frictionvalues = [1, 1, 1, 1, 1, 1, 1, 1.2, 0.8, 0.9];
+    // var frictionvalues = [1, 1, 1, 1, 1, 1, 1, 0.7, 1.2, 0.8];
     return frictionvalues[
       Math.floor(Game.randomInRange(0, frictionvalues.length))
     ];
