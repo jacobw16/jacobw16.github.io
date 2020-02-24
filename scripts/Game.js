@@ -428,7 +428,6 @@ export default class Game {
 
     this.loginPage.form.addEventListener("submit", ev => {
       ev.preventDefault();
-      console.log(this.loginPage.username.value);
       this.playerName = this.loginPage.username.value;
       // this.loginPage.username.value = "";
       this.hideMenu(this.loginPage.menu);
