@@ -8,6 +8,7 @@
     "build": "parcel build index.html"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.8.3",
     "@tensorflow/tfjs": "^1.5.2",
     "@tensorflow/tfjs-layers": "^1.5.1",
     "@tensorflow/tfjs-vis": "^1.4.0",
@@ -15,8 +16,12 @@
   },
   "devDependencies": {
     "@babel/core": "7.2.0",
+    "@babel/plugin-transform-runtime": "^7.8.3",
     "parcel-bundler": "^1.6.1",
     "parcel-plugin-static-files-copy": "^2.3.1"
   },
-  "keywords": []
+  "keywords": [],
+  "plugins": [
+    "@babel/plugin-transform-runtime"
+  ]
 }

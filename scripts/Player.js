@@ -51,6 +51,7 @@ export default class Player extends AABB {
       this.sprite = this.createSprite();
     }
     this.sprite.drawSprite();
+    // super.draw();
   }
 
   setScores() {
@@ -116,29 +117,27 @@ export default class Player extends AABB {
     }
 
     //increase landing distance and platform distance with speed.
+    this.updateVelocity();
+    this.fall();
+    this.lastcollision = null;
+    this.handleCollisions(game.surfacearray);
+    this.position.y += this.vel.y * this.velocityMultipliery;
+    this.position.x +=
+      this.vel.x * this.velocityMultiplierx * this.frictionMultiplier;
+    this.updateScore(game.deltatime);
+    // this.updateRewind();
+    if (this.top() >= screen.height) {
+      //  restartGame();
+    }
+  }
+
+  updateVelocity() {
     if (this.vel.x < this.maxvelocity) {
       this.vel.x += this.velocitygrowthRate;
       if (game.platformgap < game.platformgapMax) {
         game.platformMinWidth += game.platformgapgrowthRate;
         game.platformgap += game.platformgapgrowthRate;
       }
-    }
-    this.fall();
-    this.lastcollision = null;
-    this.handleCollisions(game.surfacearray);
-    // if (this.currentPower && this.currentPower.name === "halfSpeed") {
-    //   this.position.y += this.vel.y / 2;
-    //   this.position.x += this.vel.x / 2;
-    // } else {
-    //   this.position.y += this.vel.y;
-    //   this.position.x += this.vel.x;
-    // }
-    this.position.y += this.vel.y * this.velocityMultipliery;
-    this.position.x +=
-      this.vel.x * this.velocityMultiplierx * this.frictionMultiplier;
-    this.updateScore(game.deltatime);
-    if (this.top() >= screen.height) {
-      //  restartGame();
     }
   }
 
@@ -187,8 +186,8 @@ export default class Player extends AABB {
       // console.log(JSON.stringify(object));
       if (object.instantiated) {
         objectcount++;
-        var collisionright = detectCollision(this.bottomright(), object);
-        var collisionleft = detectCollision(this.bottomleft(), object);
+        var collisionright = detectCollision(this.bottomright(), object, this);
+        var collisionleft = detectCollision(this.bottomleft(), object, this);
         if (collisionright.val === true) {
           this.onCollisionEnter(collisionright);
           resolveCollision(this, object, collisionright);
@@ -203,8 +202,8 @@ export default class Player extends AABB {
       if (object.obstacles.length > 0) {
         objectcount++;
         for (var obstacle of object.obstacles) {
-          var collbottom = detectCollision(this.bottomright(), obstacle);
-          var colltop = detectCollision(this.topright(), obstacle);
+          var collbottom = detectCollision(this.bottomright(), obstacle, this);
+          var colltop = detectCollision(this.topright(), obstacle, this);
           if (collbottom.val === true && this.immune === false) {
             if (obstacle.floorspike === true) {
               this.resolveCollisionFloorspike(this, obstacle, collbottom);

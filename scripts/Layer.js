@@ -58,10 +58,10 @@ export default class Layer {
         dwidth,
         dheight
       );
-      // increments the pointer each frame
     };
 
     this.move = function() {
+      // moves the source x position by 0 if the camera is at the starting point, but by the scrollspeed if the camera is following the player.
       this.sx += game.camX === 0 ? 0 : this.scrollspeed;
       //  this.dx -= this.scrollspeed;
       //   this.pointer += this.scrollspeed * 5;
@@ -87,6 +87,10 @@ export default class Layer {
     if (src !== undefined && src.constructor.name !== "Array") {
       var img = new Image();
       img.addEventListener("load", () => {});
+
+      //require() must be called on all source paths so parcel bundler knows to include these files in the compiled package.
+      //it is not possible to use variables for this process as require statements are compiled first and before variables are initialised.
+
       if (src === "./static/city_background_clean_long.png") {
         src = require("./static/city_background_clean_long.png");
       } else if (src === "./static/city_background_clean.png") {

@@ -25,7 +25,9 @@
       #mainMenu,
       #loginPage,
       #helpPage,
-      #scoresPage {
+      #scoresPage,
+      #difficultySelect,
+      #modeSelect {
         position: absolute;
         visibility: hidden;
         text-align: center;
@@ -51,7 +53,13 @@
       #playBtn,
       #helpProceed,
       #scoresBtn,
-      #backBtn {
+      #backBtn,
+      #easyBtn,
+      #mediumBtn,
+      #hardBtn,
+      #soloBtn,
+      #pveBtn,
+      #trainAi {
         border: 2px solid black;
       }
 
@@ -80,6 +88,24 @@
       }
 
       #backBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #easyBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #hardBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #mediumBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #soloBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #pveBtn:hover {
+        background-color: #ffffff9a;
+      }
+      #trainAi:hover {
         background-color: #ffffff9a;
       }
 
@@ -138,8 +164,21 @@
       <h3 id="exitBtn">Exit</h3>
     </section>
 
+    <section id="difficultySelect">
+      <h3 id="hardBtn">Hard</h3>
+      <h3 id="mediumBtn">Medium</h3>
+      <h3 id="easyBtn">Easy</h3>
+      <h3 id="backBtn">Back</h3>
+    </section>
+
+    <section id="modeSelect">
+      <h3 id="soloBtn">Solo</h3>
+      <h3 id="pveBtn">VS. AI</h3>
+      <h3 id="trainAi">Train AI</h3>
+    </section>
+
     <section id="gameOver">
-      <h1 class="title">Game Over</h1>
+      <h1 class="title" id="gameOverText">Game Over</h1>
       <h3 id="restartBtn">Click to Restart</h3>
       <h3 id="exitBtn">Exit</h3>
       <h1 id="highScoreAlert">NEW HIGHSCORE</h1>

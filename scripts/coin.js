@@ -51,6 +51,7 @@ export default class Coin extends PowerUp {
   }
 
   collect() {
+    // adds the value of the coin to the player's score.
     game.player.score += this.value;
     var index = game.coins.indexOf(this);
     game.coins.splice(index, 1);

@@ -9,6 +9,8 @@ import Game from "./Game.js";
 export default class Platform extends AABB {
   constructor(
     pId = 0,
+    //generateobstacles = true,
+    obstacleQuantity = 5,
     px = game.screen.width / 6 + game.screen.width / 72 - game.screen.width / 2,
     py = Game.randomInRange(
       game.screen.height / 2,
@@ -29,7 +31,7 @@ export default class Platform extends AABB {
     this.obstacleDistance = this.landingDistance;
     this.obstacleWidth = Game.randomInRange(100, 200); // change so obstacle width is not constant from initialisation
     this.obstacleHeight = 50;
-    this.obstacleQuantity = 5;
+    this.obstacleQuantity = obstacleQuantity;
     this.id = pId;
     this.passedplatgap = false;
     this.friction = this.getFriction();
@@ -114,11 +116,13 @@ export default class Platform extends AABB {
 
   draw() {
     super.draw();
-
+    this.generateObstacles();
     for (var i of this.obstacles) {
       i.draw();
     }
+  }
 
+  generateObstacles() {
     if (this.coordinates.length === 0 && this.instantiated && this.id !== 0) {
       //generates obstacles for instantiated platforms.
       var min = this.left() + this.obstacleWidth + this.landingDistance;

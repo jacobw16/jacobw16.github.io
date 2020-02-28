@@ -1,29 +1,70 @@
 import Player from "./Player.js";
 import NeuralNet from "./NeuralNetwork.js";
 import { game } from "./main.js";
+import { restartGame } from "./main";
+import { detectCollision, resolveCollision } from "./collisions.js";
+import Vector from "./Vector.js";
 export default class Enemy extends Player {
-  constructor() {
+  constructor(nnModel = new NeuralNet(5, 4, 2)) {
     super();
     this.previousplatform;
-    this.nn = new NeuralNet(5, 4, 2);
+    this.nn = nnModel;
     this.outputvalues;
+    this.width = game.player.width * 2;
+    this.height = game.player.height * 2;
+    this.immune = true;
+    this.stopUpdating = false;
+    this.colour = "red";
+  }
+
+  draw() {
+    game.ctx.fillStyle = this.colour;
+    game.ctx.fillRect(
+      this.position.x,
+      this.position.y,
+      this.width,
+      this.height
+    );
+    //reset the canvas fillstyle.
+    game.ctx.fillStyle = "black";
   }
 
   update() {
-    this.vel.x = this.initvel;
     //increase landing distance and platform distance with speed.
     // this.initvel *= 1.001;
-    this.fall();
-    this.handleCollisions(game.game.surfacearray);
-    this.position.y += this.vel.y;
-    this.position.x += this.vel.x;
-    this.makeDecision();
-    this.updateScore(game.deltatime);
+    if (this.stopUpdating === false) {
+      this.makeDecision();
+      this.fall();
 
-    if (this.top() >= game.screen.height) {
-      game.savedEnemies.push(
-        game.population.splice(game.population.indexOf(this), 1)[0]
-      );
+      this.handleCollisions(game.surfacearray);
+      // this.vel.x *= game.deltatime;
+      // this.vel.y *= game.deltatime;
+      this.position.y += this.vel.y * this.velocityMultipliery;
+      this.position.x +=
+        this.vel.x * this.velocityMultiplierx * this.frictionMultiplier;
+      if (game.state === "RUNNING") {
+        this.updateVelocity();
+        if (this.top() >= game.screen.height) {
+          this.stopUpdating = true;
+          document.getElementById("gameOverText").innerText = "You Win!";
+        }
+      }
+      this.updateScore(game.deltatime);
+    }
+
+    if (game.state === "TRAINING") {
+      if (this.top() >= game.screen.height && game.population.length > 1) {
+        game.savedEnemies.push(
+          game.population.splice(game.population.indexOf(this), 1)[0]
+        );
+        // game.player = game.population[0];
+      } else if (
+        this.top() >= game.screen.height &&
+        game.population.length === 1
+      ) {
+        var enemies = this.savedEnemies;
+        restartGame("RUNNING", 0, enemies, game.generationNo + 1);
+      }
     }
   }
 
@@ -47,6 +88,31 @@ export default class Enemy extends Player {
       }
     }
     return closestObstacle;
+  }
+
+  handleCollisions(arr) {
+    for (var object of arr) {
+      var collright = detectCollision(this.bottomright(), object, this);
+      var collleft = detectCollision(this.bottomleft(), object, this);
+      if (collright.val === true) {
+        resolveCollision(this, object, collright);
+      } else if (collleft.val === true) {
+        resolveCollision(this, object, collleft);
+      }
+    }
+    if (game.state === "RUNNING") {
+      var playerCollision = detectCollision(
+        new Vector(
+          game.player.position.x,
+          game.player.position.y + game.player.halfsizeHeight
+        ),
+        this,
+        this
+      );
+      if (playerCollision.val === true) {
+        game.setState("GAMEOVER");
+      }
+    }
   }
 
   findNextPlatform() {
@@ -73,6 +139,13 @@ export default class Enemy extends Player {
       }
     }
     return 0;
+  }
+
+  jump() {
+    if (this.collided) {
+      this.vel.y -= this.jumpspeed;
+      this.collided = false;
+    }
   }
 
   makeDecision() {
@@ -150,48 +223,19 @@ export default class Enemy extends Player {
       inputs[3] = nextplatform.left();
     }
 
-    inputs[4] = nearestObstacle !== 0 ? nearestObstacle.left() - 100 : 0;
-    // inputs[5] =
-    //   nearestObstacle !== 0 ? Math.abs(nearestObstacle.top() - this.bottom()) : 0;
-    // inputs[6] = this.bottom();
-    // inputs[7] = this.vel.y;
-    // var inputs = [];
-    // //get inputs: xvel, currentx, xpos of nearest obstacle, xend of current platform, xstart of next platform
-
-    // inputs[0] = this.vel.x;
-    // inputs[1] = this.right();
-    // inputs[2] =
-    //   this.findCurrentPlatform() !== 0 ? this.findCurrentPlatform().right() : 0;
-    // inputs[3] =
-    //   this.findNextPlatform() !== 0 ? this.findNextPlatform().left() : 0;
-
-    // if (this.findNextPlatform() === null) {
-    //   inputs[2] = null;
-    // } else {
-    //   inputs[2] = this.findNextPlatform().left();
-    // }
-    // var nearestObstacleX = null;
-    // if (this.findNearestObstacle() !== null)
-    //   nearestObstacleX = this.findNearestObstacle().left();
-    // inputs[2] = nearestObstacleX || null;
-    // inputs[3] = this.findCurrentPlatform().right() || this.previousplatform.right();
-    // if (this.findNextPlatform() === null) {
-    //   inputs[4] = null;
-    // } else {
-    //   inputs[4] = null; //this.findNextPlatform().left();
-    // }
-    // console.clear();
-    // console.log(inputs);
-    // console.clear();
-    // console.log(inputs);
+    // inputs[4] = nearestObstacle !== 0 ? nearestObstacle.left() - 100 : 0;
+    inputs[4] = 0;
     var result = this.nn.output(inputs);
-    // result.data().then(x => {
-    //   if (x[0] > x[1]) {
-    //     this.jump();
-    //   }
-    // });
-    if (result.dataSync()[0] > result.dataSync()[1]) {
-      this.jump();
-    }
+    result.data().then(x => {
+      if (x[0] > x[1]) {
+        this.jump();
+      }
+    });
+    // console.log(result.dataSync());
+    // if (result.dataSync()[0] > result.dataSync()[1]) {
+    //   // this.jump();
+    // }
+    // console.log(this.jumpspeed);
+    // this.jump();
   }
 }

@@ -1,4 +1,5 @@
 import { game } from "./main";
+import _ from "lodash";
 import Game from "./Game.js";
 
 // import * as tf from "@tensorflow/tfjs";
@@ -69,27 +70,6 @@ export default class NeuralNet {
     });
   }
 
-  // mutate(rate) {
-  //   tf.tidy(() => {
-  //     const weights = this.model.getWeights();
-  //     const mutatedWeights = [];
-  //     for (let i = 0; i < weights.length; i++) {
-  //       let tensor = weights[i];
-  //       let shape = weights[i].shape;
-  //       let values = tensor.dataSync().slice();
-  //       for (let j = 0; j < values.length; j++) {
-  //         if (Math.random() < rate) {
-  //           let w = values[j];
-  //           values[j] = w + Game.randomInRange(-0.1, 0.1);
-  //         }
-  //       }
-  //       let newTensor = tf.tensor(values, shape);
-  //       mutatedWeights[i] = newTensor;
-  //     }
-  //     this.model.setWeights(mutatedWeights);
-  //   });
-  // }
-
   copy() {
     return tf.tidy(() => {
       var model = NeuralNet.createModel(
@@ -104,5 +84,6 @@ export default class NeuralNet {
       model.setWeights(weights);
       return model;
     });
+    // return _.cloneDeep(this.model);
   }
 }

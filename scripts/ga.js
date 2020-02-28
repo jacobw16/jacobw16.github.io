@@ -1,9 +1,9 @@
 import Player from "./Player";
-import { game } from "./main";
+import { game } from "./main.js";
 import Game from "./Game.js";
 import Enemy from "./Enemy";
 
-export function createPopulation(size = 250, arr) {
+export function createPopulation(size = 250, arr = []) {
   for (var i = 0; i < size; i++) {
     if (game.savedEnemies.length === 0 || game.savedEnemies === undefined) {
       arr.push(new Enemy());
@@ -11,6 +11,7 @@ export function createPopulation(size = 250, arr) {
       arr.push(Select(game.savedEnemies));
     }
   }
+  game.savedEnemies = [];
   return arr;
 }
 
@@ -32,7 +33,7 @@ export function Select(pop) {
   }
   var child = new Enemy();
   child.nn.model = selected.nn.copy();
-  child.nn.mutate(0.05);
+  child.nn.mutate(0.01);
   return child;
 }
 
@@ -46,11 +47,4 @@ export function getFurthestPlayer() {
     }
   }
   return target;
-}
-
-export function managePopulation() {
-  if (game.population.length === 0) {
-    console.log("new generation");
-    game.restartGame();
-  }
 }

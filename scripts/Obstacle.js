@@ -7,6 +7,8 @@ import {
   thresholdedReLU,
   Layer
 } from "@tensorflow/tfjs-layers/dist/exports_layers";
+import { detectCollision } from "./collisions.js";
+import Vector from "./Vector.js";
 
 export default class Obstacle extends AABB {
   constructor(
@@ -26,6 +28,7 @@ export default class Obstacle extends AABB {
     this.instantiated = false;
     this.sprite = this.createSprite(src, imageWidth, imageHeight);
     this.floorspike = floorspike;
+    this.collisions = true;
     if (Math.random() < 0.5 && !this.floorspike) {
       // this.blade = this.createBlade();
       this.createPowerUp();
@@ -42,6 +45,8 @@ export default class Obstacle extends AABB {
   move() {
     // if (this.position.x === game.surfacearray[0].coordinates[0]))
     // if (this.blade !== null) this.blade.update();
+    // this.handleCollisions();
+    // this.sprite.drawSprite();
     super.move();
   }
   createSprite(src, imageWidth, imageHeight) {
@@ -59,6 +64,22 @@ export default class Obstacle extends AABB {
       imageHeight,
       false
     );
+  }
+
+  handleCollisions() {
+    if (this.collisions === true) {
+      var result = detectCollision(
+        new Vector(
+          this.position.x,
+          this.position.y + (this.height - this.halfsizeHeight)
+        ),
+        game.enemy,
+        game.enemy
+      );
+      if (result.val === true) {
+        this.vel.addForce(game.enemy.vel);
+      }
+    }
   }
 
   createBlade() {
